@@ -3,235 +3,301 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Programmer Portfolio</title>
+    <title>Omar Cusma Fait - Portfolio</title>
 
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Modern font */
             margin: 0;
             padding: 0;
-            background-color: #f0f0f0;
+            background-color: #f4f4f4; /* Lighter background */
+            color: #333; /* Darker text */
+            line-height: 1.6; /* Improved readability */
         }
         header {
-            background-color: #333;
-            color: #fff;
+            background-color: #2E3440; /* Darker header background */
+            color: #ECEFF4; /* Lighter header text */
             text-align: center;
             padding: 2rem 0;
+            margin-bottom: 2rem; /* Space below header */
         }
         .container {
             max-width: 800px;
             margin: 0 auto;
             padding: 2rem;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            border-radius: 8px; /* Rounded corners */
+        }
+        .section-title {
+            color: #2E3440;
+            border-bottom: 2px solid #88C0D0; /* Accent color */
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
         }
         .project {
             margin-bottom: 2rem;
-            padding: 1rem;
-            background-color: #fff;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            padding: 1.5rem; /* Increased padding */
+            background-color: #F8F8F8; /* Lighter project background */
+            border: 1px solid #D8DEE9;
+            border-radius: 8px;
         }
-        h1 {
-            margin-bottom: 0.5rem;
+        .project h3 {
+            color: #8FBCBB; /* Project title color */
+            margin-top: 0;
         }
-        p {
-            margin-bottom: 0.5rem;
+        a {
+            color: #88C0D0;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        ul {
+            list-style-type: square; /* Square bullet points */
+            padding-left: 1.2rem;
+        }
+
+        /* Contact Section Styles */
+        .contact-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.8rem;
+        }
+        .contact-icon {
+            margin-right: 0.8rem;
+            font-size: 1.2rem; /* Icon size */
+            color: #4C566A; /* Icon color */
+        }
+
+        /* Media Queries for Responsiveness */
+        @media (max-width: 600px) {
+            .container {
+                padding: 1.5rem;
+            }
+            header h1 {
+                font-size: 2rem;
+            }
         }
     </style>
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
 
 <header>
     <h1>Omar Cusma Fait</h1>
-    <p>Student</p>
+    <p>Physics Bachelor's</p>
+    <p>Data Science and Artificial Intelligence Student at UniTS</p>
 </header>
 
 <div class="container">
 
-
-    <!--This section contains some info about me-->
-    <h2>About Me</h2>
-    <p>
-        While pursuing my bachelor’s degree I developed familiarity with complex problems in math and physics,
-        analytical thinking and problem-solving skills that have proven valuable in approaching challenges from a
-        logical perspective. I give my best when I’m working on projects that I am passionate about. <br />
-        My experience with chess taught me to stay calm under pressure and to look for a better solution for any
-        given problem. <br />
-        I am passionate about programming, numerical simulations and artificial intelligence.
-    </p>
+    <section>
+        <h2 class="section-title">Contact</h2>
+        <div class="contact-item"><i class="fas fa-envelope contact-icon"></i> Email: <a href="mailto:omar.cusma.fait@gmail.com">omar.cusma.fait@gmail.com</a></div>
+        <div class="contact-item"><i class="fab fa-github contact-icon"></i> GitHub: <a href="https://github.com/omega97">github.com/Omega97</a></div>
+        <div class="contact-item"><i class="fab fa-telegram contact-icon"></i> Telegram: <a href="https://t.me/OmarFait">@OmarFait</a></div>
+        <div class="contact-item"><i class="fab fa-discord contact-icon"></i> Discord: @Omega97</div>
+    </section>
+    <hr>
 
 
-    <!--My education-->
-    <h2>Education and Training</h2>
-    <p>
-        [2023] Bachelor’s degree in physics at the
-        <a href="https://df.units.it/">Università degli studi di Trieste</a> <br />
-        [2023] Internship in astrophysical data analysis at the INAF (supervisor: Elena Orlando) <br />
-        [2015] High School diploma at the "Istituto di Istruzione Superiore Gabriele D'Annunzio" <br />
-    </p>
-
-
-    <!--Languages-->
-    <h2>Language Skills</h2>
-    <ul>
-        <li>Italian (Mother tongue)</li>
-        <li>Slovenian (Mother tongue)</li>
-        <li>English (B2, British institutes)</li>
-    </ul>
-
-
-    <!--List of tech-related things I know-->
-    <h2>Digital Skills</h2>
-    <ul>
-        <li>Python (used in-depth during bachelor’s degree and especially for personal projects)</li>
-        <li>Pascal (Secondary school)</li>
-        <li>Krita (self-taught image editing)</li>
-        <li>Windows, Excel, Word, PowerPoint, Ubuntu</li>
-    </ul>
-
-
-    <!--contact info-->
-    <h2>Contact</h2>
-    <p>Email: omar.cusma.fait@gmail.com</p>
-    <p>GitHub: <a href="https://github.com/omega97">github.com/Omega97</a></p>
-
-
-    <!--This section contains other info about me-->
-    <h2>Other Facts About Me</h2>
-    <p>
-        [2015] Participant of “Scienze under 18”, an in-person activity that aims to bring math to the
-        attention of the public and young students (supervisor: Caterina Vicentini) <br />
-        [2007-2010] Awarded 22 Chess medals in official tournaments
-    </p>
-
-
-    <!--list of some relevant projects that I have worked on-->
-    <h2>Projects</h2>
-
-    <div class="project">
-        <h3>Internship in Astrophysical Data Analysis for Sky-map Correlation</h3>
+    <section>
+        <h2 class="section-title">About Me</h2>
         <p>
-            I created a
-            <a href="https://github.com/Omega97/skymap_correlation">GitHub repository</a>
-            that allows us to study the local correlation map between two HEALPix sky-maps.
-            The problem was open-ended, and I had to come up with my own solution, which was
-            to make a library for calculating the local correlation efficiently.
-            Supervisor: Elena Orlando</p>
-    </div>
-    
-    <div class="project">
-        <h3>Survay of </h3>
-        <p>
-            Survey of various image classifiers, and the resilience of GradCAM to perturbations.
+            While pursuing my bachelor’s degree I developed familiarity with complex problems in math and physics,
+            analytical thinking and problem-solving skills that have proven valuable in approaching challenges from a
+            logical perspective. I give my best when I’m working on projects that I am passionate about. <br />
+            My experience with chess taught me to stay calm under pressure and to look for a better solution for any
+            given problem. <br />
+            I am passionate about programming, numerical simulations and artificial intelligence.
         </p>
-    </div>
-    
-    <div class="project">
-        <h3>Mini-Hold'Em</h3>
-        <p>
-            In 
-            <a href="https://github.com/Omega97/GMOOptimizationProject">this project</a>
-            , I tested how evolutionary algorithms perform in mastering hidden information 
-            card games of various degrees of complexity. Mini-Hold'em is a simplified version 
-            of Poker Texas hold'Em. The bot is able to achieve human-level play for simpler 
-            versions of the game, but it struggles when variability is too high.
-        </p>
-    </div>
-    
-    <div class="project">
-        <h3>Mancala Self-reinforcement Learning AI</h3>
-        <p>
-            I created a self-reinforcement learning AI
-            <a href="https://github.com/Omega97/mancala">self-reinforcement learning AI</a>
-            for the game of Mancala. The agent uses MCTS to choose the best move. A neural-network-based
-            policy is used to guide the search. Roll-outs are performed to evaluate the leaf nodes.
-            The roll-outs are truncated and evaluated with a value network. Both the value net and the policy are
-            trained on self-play data, generated with the help of a custom Mancala simulator that I created.
+    </section>
+    <hr>
 
+    <section>
+        <h2 class="section-title">Education and Training</h2>
+        <p>
+            [2023] Bachelor’s degree in physics at the
+            <a href="https://df.units.it/">Università degli studi di Trieste</a> <br />
+            [2023] Internship in astrophysical data analysis at the INAF (supervisor: Elena Orlando) <br />
+            [2015] High School diploma at the "Istituto di Istruzione Superiore Gabriele D'Annunzio" <br />
         </p>
-    </div>
+    </section>
+    <hr>
 
-    <div class="project">
-        <h3>Wiki-tok</h3>
-        <p>
-            This group project implements a recommendation system of Wikipedia pages. The user can 
-            provide feedback for each page, and then he is fed with the next one, just like with the app TikTok. 
-        </p>
-    </div>
+    <section>
+        <h2 class="section-title">Language Skills</h2>
+        <ul>
+            <li>Italian (Mother tongue)</li>
+            <li>Slovenian (Mother tongue)</li>
+            <li>English (B2, British institutes)</li>
+        </ul>
+    </section>
+    <hr>
 
-    <div class="project">
-        <h3>Search Heuristics</h3>
-        <p>
-            In the rich and well-studied field of optimization, one generic use case is to find the 
-            best one among a set of random variables, trading off between reward and exploration cost. 
-            <a href="https://github.com/Omega97/SearchHeuristic">This small project</a>
-            provides a simple implementation and comparison of some of the best-performing heuristics, 
-            ready to be applied in real-world scenarios.
-        </p>
-    </div>
-    
-    <div class="project">
-        <h3>Quantum Logic Gates</h3>
-        <p>
-            In this project, I tested my knowledge of quantum mechanics by creating a
-            <a href="https://github.com/Omega97/quantum_logic_gates">repository</a>
-            that contains a library for simulating quantum logic gates. The library enables the user to
-            visualize the process of applying quantum operators and perform simple quantum algorithms.
-        </p>
-    </div>
+    <section>
+        <h2 class="section-title">Digital Skills</h2>
+        <ul>
+            <li>Python (used in-depth during bachelor’s degree and especially for personal projects)</li>
+            <li>Pascal (Secondary school)</li>
+            <li>Krita (self-taught image editing)</li>
+            <li>Windows, Excel, Word, PowerPoint, Ubuntu</li>
+        </ul>
+    </section>
+    <hr>
 
-    <div class="project">
-        <h3>Steganography</h3>
-        <p>
-            I created a
-            <a href="https://github.com/Omega97/steganography">repository</a>
-            that allows you to explore how steganography effects the individual bits of an image.
-        </p>
-    </div>
 
-    <div class="project">
-        <h3>Neural Networks from Scratch</h3>
+    <section>
+        <h2 class="section-title">Other Facts About Me</h2>
         <p>
-            This
-            <a href="https://github.com/Omega97/neural_net_from_scratch">repository</a>
-            that I created allowed me to create and train a neural network from scratch.
-            This effort tested my knowledge and understanding of the subject.
+            [2015] Participant of “Scienze under 18”, an in-person activity that aims to bring math to the
+            attention of the public and young students (supervisor: Caterina Vicentini) <br />
+            [2007-2010] Awarded 22 Chess medals in official tournaments
         </p>
-    </div>
+    </section>
+    <hr>
 
-    <div class="project">
-        <h3>Ramanujan Machine</h3>
-        <p>
-            The
-            <a href="https://arxiv.org/abs/1907.00205">Ramanujan Machine</a>
-            is a tool based on continued fractions and gradient descent. It allows finding interesting
-            equations for important mathematical constants. I created a
-            <a href="https://github.com/Omega97/Ramanujan_Machine">GitHub repository</a>
-            that successfully implemented this tool, and it got featured in a
-            <a href="https://youtu.be/BXw8vQXxvqc?list=PLOjBt28t6kTvm_7W2lwWzEmXSJLWGaL5V&t=2205">Youtube video</a>
-            .
-        </p>
-    </div>
+    <section>
+        <h2 class="section-title">Projects</h2>
 
-    <div class="project">
-        <h3>Quantum Ground State Simulation</h3>
-        <p>
-            Using my knowledge of quantum mechanics, I created a
-            <a href="https://github.com/Omega97/quantum_ground_state_simulation">repository</a>
-            that allows you to simulate the ground state of a quantum system of interacting particles.
-            Given the potential, the program will find the ground state of the system using the variational method.
-            The program makes the distinction between bosons and fermions. It can also handle potentials with
-            a singularity at the origin.
-        </p>
-    </div>
+        <div class="project">
+            <h3>Internship in Astrophysical Data Analysis for Sky-map Correlation</h3>
+            <p>
+                I created a
+                <a href="https://github.com/Omega97/skymap_correlation">GitHub repository</a>
+                that allows us to study the local correlation map between two HEALPix sky-maps.
+                The problem was open-ended, and I had to come up with my own solution, which was
+                to make a library for calculating the local correlation efficiently.
+                Supervisor: Elena Orlando</p>
+        </div>
 
-    <div class="project">
-        <h3>Wave simulation</h3>
-        <p>
-            I created a simple simulation of a 2D wave using the Runge-Kutta method. The library allows for
-            different boundary conditions, initial conditions, and obstacles. The simulation can be exported to a GIF.
-        </p>
-    </div>
+        <div class="project">
+            <h3>Semantic Retrieval</h3>
+            <p>
+                With this
+                <a href="https://github.com/Omega97/SemanticSearch">system</a>
+                you can find files in a given directory based on the actual meaning of
+                your queries, rather than keywords. It leavereges the semantic embeddings
+                generated by powerful LLMs.
+            </p>
+        </div>
+
+        <div class="project">
+            <h3>Survay of Image Classifiers </h3>
+            <p>
+                Survey of various image classifiers, and the resilience of GradCAM to perturbations.
+            </p>
+        </div>
+
+        <div class="project">
+            <h3>Mini-Hold'Em</h3>
+            <p>
+                In
+                <a href="https://github.com/Omega97/GMOOptimizationProject">this project</a>
+                , I tested how evolutionary algorithms perform in mastering hidden information
+                card games of various degrees of complexity. Mini-Hold'em is a simplified version
+                of Poker Texas hold'Em. The bot is able to achieve human-level play for simpler
+                versions of the game, but it struggles when variability is too high.
+            </p>
+        </div>
+
+        <div class="project">
+            <h3>Mancala Self-Reinforcement Learning AI</h3>
+            <p>
+                I created a self-reinforcement learning AI
+                <a href="https://github.com/Omega97/mancala">self-reinforcement learning AI</a>
+                for the game of Mancala. The agent uses MCTS to choose the best move. A neural-network-based
+                policy is used to guide the search. Roll-outs are performed to evaluate the leaf nodes.
+                The roll-outs are truncated and evaluated with a value network. Both the value net and the policy are
+                trained on self-play data, generated with the help of a custom Mancala simulator that I created.
+
+            </p>
+        </div>
+
+        <div class="project">
+            <h3>Wiki-Tok</h3>
+            <p>
+                This group project implements a recommendation system of Wikipedia pages. The user can
+                provide feedback for each page, and then he is fed with the next one, just like with the app TikTok.
+            </p>
+        </div>
+
+        <div class="project">
+            <h3>Search Heuristics</h3>
+            <p>
+                In the rich and well-studied field of optimization, one generic use case is to find the
+                best one among a set of random variables, trading off between reward and exploration cost.
+                <a href="https://github.com/Omega97/SearchHeuristic">This small project</a>
+                provides a simple implementation and comparison of some of the best-performing heuristics,
+                ready to be applied in real-world scenarios.
+            </p>
+        </div>
+
+        <div class="project">
+            <h3>Quantum Logic Gates</h3>
+            <p>
+                In this project, I tested my knowledge of quantum mechanics by creating a
+                <a href="https://github.com/Omega97/quantum_logic_gates">repository</a>
+                that contains a library for simulating quantum logic gates. The library enables the user to
+                visualize the process of applying quantum operators and perform simple quantum algorithms.
+            </p>
+        </div>
+
+        <div class="project">
+            <h3>Steganography</h3>
+            <p>
+                I created a
+                <a href="https://github.com/Omega97/steganography">repository</a>
+                that allows you to explore how steganography effects the individual bits of an image.
+            </p>
+        </div>
+
+        <div class="project">
+            <h3>Neural Networks from Scratch</h3>
+            <p>
+                This
+                <a href="https://github.com/Omega97/neural_net_from_scratch">repository</a>
+                that I created allowed me to create and train a neural network from scratch.
+                This effort tested my knowledge and understanding of the subject.
+            </p>
+        </div>
+
+        <div class="project">
+            <h3>Ramanujan Machine</h3>
+            <p>
+                The
+                <a href="https://arxiv.org/abs/1907.00205">Ramanujan Machine</a>
+                is a tool based on continued fractions and gradient descent. It allows finding interesting
+                equations for important mathematical constants. I created a
+                <a href="https://github.com/Omega97/Ramanujan_Machine">GitHub repository</a>
+                that successfully implemented this tool, and it got featured in a
+                <a href="https://youtu.be/BXw8vQXxvqc?list=PLOjBt28t6kTvm_7W2lwWzEmXSJLWGaL5V&t=2205">Youtube video</a>
+                .
+            </p>
+        </div>
+
+        <div class="project">
+            <h3>Quantum Ground State Simulation</h3>
+            <p>
+                Using my knowledge of quantum mechanics, I created a
+                <a href="https://github.com/Omega97/quantum_ground_state_simulation">repository</a>
+                that allows you to simulate the ground state of a quantum system of interacting particles.
+                Given the potential, the program will find the ground state of the system using the variational method.
+                The program makes the distinction between bosons and fermions. It can also handle potentials with
+                a singularity at the origin.
+            </p>
+        </div>
+
+        <div class="project">
+            <h3>Wave simulation</h3>
+            <p>
+                I created a simple simulation of a 2D wave using the Runge-Kutta method. The library allows for
+                different boundary conditions, initial conditions, and obstacles. The simulation can be exported to a GIF.
+            </p>
+        </div>
+    </section>
 
 </div>
 </body>
