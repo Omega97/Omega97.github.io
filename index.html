@@ -7,43 +7,44 @@
 
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Modern font */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f4; /* Lighter background */
-            color: #333; /* Darker text */
-            line-height: 1.6; /* Improved readability */
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.6;
         }
         header {
-            background-color: #2E3440; /* Darker header background */
-            color: #ECEFF4; /* Lighter header text */
+            background-color: #2E3440;
+            color: #ECEFF4;
             text-align: center;
-            padding: 2rem 0;
-            margin-bottom: 2rem; /* Space below header */
+            padding: 1rem 0;
+            margin-bottom: 0rem;
+
         }
         .container {
             max-width: 800px;
             margin: 0 auto;
             padding: 2rem;
             background-color: #fff;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-            border-radius: 8px; /* Rounded corners */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
         }
         .section-title {
             color: #2E3440;
-            border-bottom: 2px solid #88C0D0; /* Accent color */
+            border-bottom: 2px solid #88C0D0;
             padding-bottom: 0.5rem;
             margin-bottom: 1.5rem;
         }
         .project {
             margin-bottom: 2rem;
-            padding: 1.5rem; /* Increased padding */
-            background-color: #F8F8F8; /* Lighter project background */
+            padding: 1.5rem;
+            background-color: #F8F8F8;
             border: 1px solid #D8DEE9;
             border-radius: 8px;
         }
         .project h3 {
-            color: #8FBCBB; /* Project title color */
+            color: #8FBCBB;
             margin-top: 0;
         }
         a {
@@ -54,11 +55,9 @@
             text-decoration: underline;
         }
         ul {
-            list-style-type: square; /* Square bullet points */
+            list-style-type: square;
             padding-left: 1.2rem;
         }
-
-        /* Contact Section Styles */
         .contact-item {
             display: flex;
             align-items: center;
@@ -66,11 +65,9 @@
         }
         .contact-icon {
             margin-right: 0.8rem;
-            font-size: 1.2rem; /* Icon size */
-            color: #4C566A; /* Icon color */
+            font-size: 1.2rem;
+            color: #4C566A;
         }
-
-        /* Media Queries for Responsiveness */
         @media (max-width: 600px) {
             .container {
                 padding: 1.5rem;
@@ -85,11 +82,34 @@
 </head>
 <body>
 
+
+<!-- Title Banner -->
 <header>
     <h1>Omar Cusma Fait</h1>
     <p>Physics Bachelor's</p>
     <p>Data Science and Artificial Intelligence Student at UniTS</p>
 </header>
+
+
+<!-- Service Communications Banner -->
+<div id="service-communications" style="background-color:#ECEFF4;color:#2E3440;padding:1rem;font-family:monospace;white-space:pre-wrap;text-align:left;">
+    Loading communications...
+</div>
+<script>
+    fetch('service_communications.txt')
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return response.text();
+        })
+        .then(text => {
+            document.getElementById('service-communications').textContent = text;
+        })
+        .catch(err => {
+            document.getElementById('service-communications').textContent =
+                '❌ Could not load service_communications.txt: ' + err;
+        });
+</script>
+
 
 <div class="container">
 
@@ -101,7 +121,6 @@
         <div class="contact-item"><i class="fab fa-discord contact-icon"></i> Discord: @Omega97</div>
     </section>
     <hr>
-
 
     <section>
         <h2 class="section-title">About Me</h2>
