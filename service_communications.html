@@ -1,0 +1,158 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Communications - Omar Cusma Fait</title>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Modern font */
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4; /* Lighter background */
+            color: #333; /* Darker text */
+            line-height: 1.6; /* Improved readability */
+        }
+        header {
+            background-color: #2E3440; /* Darker header background */
+            color: #ECEFF4; /* Lighter header text */
+            text-align: center;
+            padding: 2rem 0;
+            margin-bottom: 2rem; /* Space below header */
+            position: relative; /* Needed for absolute positioning of nav */
+        }
+        .header-nav {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+        }
+        .header-nav a {
+            background-color: #88C0D0; /* Accent color for button */
+            color: #2E3440; /* Dark text for button */
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        .header-nav a:hover {
+            background-color: #8FBCBB; /* Slightly darker on hover */
+            text-decoration: none;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            border-radius: 8px; /* Rounded corners */
+        }
+        .section-title {
+            color: #2E3440;
+            border-bottom: 2px solid #88C0D0; /* Accent color */
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .contact-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.8rem;
+        }
+        .contact-icon {
+            margin-right: 0.8rem;
+            font-size: 1.2rem; /* Icon size */
+            color: #4C566A; /* Icon color */
+        }
+        a {
+            color: #88C0D0;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        ul {
+            list-style-type: square; /* Square bullet points */
+            padding-left: 1.2rem;
+        }
+        .lecture-item {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background-color: #F8F8F8;
+            border: 1px solid #D8DEE9;
+            border-radius: 8px;
+        }
+        .lecture-item strong {
+            color: #2E3440;
+        }
+
+
+        /* Media Queries for Responsiveness */
+        @media (max-width: 600px) {
+            .container {
+                padding: 1.5rem;
+            }
+            header h1 {
+                font-size: 2rem;
+            }
+            .header-nav {
+                position: static;
+                text-align: center;
+                margin-top: 1rem;
+            }
+        }
+    </style>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+
+<header>
+    <div class="header-nav">
+        <a href="index.html">Home</a>
+    </div>
+    <h1>Service Communications & Lectures</h1>
+    <p>Connecting for services and upcoming educational sessions.</p>
+</header>
+
+<div class="container">
+
+    <section>
+        <!--
+        Scheduled Lectures & Classes
+        -->
+        <h2 class="section-title">Scheduled Lectures & Classes</h2>
+
+        <!--
+        <div class="lecture-item">
+            <strong>Introduction to Python for Data Science</strong><br>
+            Date: July 15, 2025<br>
+            Time: 10:00 AM - 1:00 PM CEST<br>
+            Topics: Python basics, NumPy, Pandas, data loading & manipulation.
+        </div>
+        -->
+
+        <div class="lecture-item">
+            <strong>Math class 3Z</strong><br>
+            Date: August 22<br>
+            Time: 8:00 - 10:00<br>
+        </div>
+
+        <div class="lecture-item">
+            <strong>Math class 4Z</strong><br>
+            Date: August 22<br>
+            Time: 10:00 - 13:00<br>
+        </div>
+
+        <!--
+        Disclaimer
+        -->
+        <p><i>For more details on a specific class or to inquire about private sessions,
+            please contact me directly.</i></p>
+    </section>
+
+</div>
+
+</body>
+</html>
