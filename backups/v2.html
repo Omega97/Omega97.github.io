@@ -73,7 +73,7 @@
             background: linear-gradient(135deg, var(--header-bg) 0%, #3B4252 100%);
             color: #ECEFF4;
             text-align: center;
-            padding: 3rem 1rem 2rem;
+            padding: 6rem 1rem 4rem;
             position: relative;
             overflow: hidden;
         }
@@ -86,15 +86,15 @@
         }
         .hero-content { position: relative; z-index: 1; }
         .animate-name {
-            font-size: 2rem;
+            font-size: 3.5rem;
             font-weight: 700;
             margin: 0;
             opacity: 0;
             animation: fadeInUp 1s forwards 0.3s;
         }
         .animate-tagline {
-            font-size: 1.1rem;
-            margin: 0.3rem 0 1rem;
+            font-size: 1.3rem;
+            margin: 0.5rem 0 1.5rem;
             opacity: 0;
             animation: fadeInUp 1s forwards 0.6s;
         }
@@ -104,8 +104,7 @@
         }
         .btn-primary {
             display: inline-block;
-            padding: 0.7rem 1.6rem;
-            font-size: 0.95rem;
+            padding: 0.9rem 2rem;
             background: var(--accent);
             color: #2E3440;
             font-weight: 600;
@@ -318,16 +317,9 @@
             .project-image { width: 100%; max-width: 300px; }
             .contact-inline { flex-direction: column; align-items: center; }
         }
-        .section-anchor {
-            display: block;
-            position: relative;
-            top: -65px;
-            visibility: hidden;
-        }
     </style>
 </head>
 <body>
-
 
     <!-- Hero Section -->
     <header class="hero">
@@ -343,7 +335,6 @@
         </div>
     </header>
 
-
     <!-- Sticky Navigation -->
     <nav id="navbar" class="navbar">
         <div class="nav-container">
@@ -354,21 +345,20 @@
                 <li><a href="#projects">Projects</a></li>
                 <li><a href="#contact">Contact</a></li>
             </ul>
+            <button id="theme-toggle" class="theme-btn">
+                <i class="fas fa-moon"></i>
+            </button>
         </div>
     </nav>
 
-
     <!-- Service Communications -->
-<!--    <div id="service-communications" style="background:#ECEFF4;color:#2E3440;padding:1rem;font-family:monospace;text-align:center;margin:2rem auto;max-width:900px;border-radius:8px;">-->
-<!--        Loading communications...-->
-<!--    </div>-->
+    <div id="service-communications" style="background:#ECEFF4;color:#2E3440;padding:1rem;font-family:monospace;text-align:center;margin:2rem auto;max-width:900px;border-radius:8px;">
+        Loading communications...
+    </div>
 
-    
     <div class="container">
 
-
         <!-- Contact Links -->
-        <a class="section-anchor" id="concat"></a>
         <div class="contact-inline" id="contact">
             <a href="mailto:omar.cusma.fait@gmail.com" class="contact-item">
                 <i class="fas fa-envelope"></i> Email
@@ -388,9 +378,7 @@
         </div>
         <hr>
 
-
         <!-- About -->
-        <a class="section-anchor" id="about"></a>
         <section id="about">
             <h2 class="section-title">About Me</h2>
             <p>
@@ -404,9 +392,7 @@
         </section>
         <hr>
 
-
         <!-- Education -->
-        <a class="section-anchor" id="education"></a>
         <section id="education">
             <h2 class="section-title">Education and Training</h2>
             <p>
@@ -418,19 +404,17 @@
         </section>
         <hr>
 
-
         <!-- Languages -->
         <section>
             <h2 class="section-title">Language Skills</h2>
             <ul>
-                <li>🇮🇹 Italian (Mother tongue)</li>
-                <li>🇸🇮 Slovenian (Mother tongue)</li>
-                <li>🇬🇧 English (Proficient, B2)</li>
-                <li>🇯🇵 Japanese (Elementary)</li>
+                <li>Italian (Mother tongue)</li>
+                <li>Slovenian (Mother tongue)</li>
+                <li>English (Proficient, B2)</li>
+                <li>Japanese (Elementary)</li>
             </ul>
         </section>
         <hr>
-
 
         <!-- Digital Skills -->
         <section>
@@ -448,74 +432,41 @@
         </section>
         <hr>
 
+        <!-- Other Facts -->
+        <section>
+            <h2 class="section-title">Other Facts About Me</h2>
+            <p>
+                [2015] Participant of “Scienze under 18”, an in-person activity that aims to bring math to the
+                attention of the public and young students (supervisor: Caterina Vicentini) <br />
+                [2007-2010] Awarded 22 Chess medals in official tournaments
+            </p>
+        </section>
+        <hr>
 
-        <!-- INTERNSHIP & THESIS -->
-        <a class="section-anchor" id="thesis"></a>
-        <section class="content-section">
-            <h2 class="section-title">Bachelor’s Thesis</h2>
+        <!-- Projects -->
+        <section id="projects">
+            <h2 class="section-title">Projects</h2>
 
+            <!-- Project Template -->
             <div class="project">
                 <div class="project-content">
-                    <!-- Cover image – put a screenshot of the title page in images/thesis_cover.png -->
-                    <img src="images/thesis_cover.png" alt="Thesis cover" class="project-image">
-
+                    <img src="images/skymap_correlation.png" alt="Sky-map Correlation" class="project-image">
                     <div class="project-text">
-                        <h3>
-                            <a href="https://github.com/Omega97/skymap_correlation/blob/main/A%20Comparative%20Analysis%20of%20Neural%20Network%20Methods%20for%20Source%20Detection%20and%20Classification%20in%20Astrophysics.pdf">
-                                A Comparative Analysis of Neural Network Methods for Source Detection and Classification in Astrophysics
-                            </a>
-                        </h3>
-
+                        <h3>Astrophysical Data Analysis for Sky-map Correlation (INAF Internship)</h3>
                         <p>
-                            <strong>Bachelor’s Thesis in Physics</strong> — Università degli Studi di Trieste (2023)<br>
-                            <em>Supervisor: <a href="https://arts.units.it/cris/rp/rp76079">Elena Orlando (INAF)</a>.</em>
+                            I created a
+                            <a href="https://github.com/Omega97/skymap_correlation">GitHub repository</a>
+                            that allows us to study the local correlation map between two HEALPix sky-maps.
+                            The problem was open-ended, and I had to come up with my own solution, which was
+                            to make a library for calculating the local correlation efficiently.<br>
+                            <em>Supervisor: <a href="https://arts.units.it/cris/rp/rp76079">Elena Orlando</a>.</em>
                         </p>
-
-                        <!-- ==== Summarized Abstract ==== -->
-                        <h4 style="margin:1rem 0 .5rem;color:var(--accent);">Abstract summary</h4>
-                        <p style="font-size:.95rem;line-height:1.7;">
-                            Machine-learning tools are essential for handling the ever-growing volume of astrophysical data.
-                            This thesis evaluates state-of-the-art object-detection models—R-CNN, Fast R-CNN, Faster R-CNN, and Mask R-CNN—for source detection, classification, localization, and deblending.
-                            By comparing their performance and the datasets they rely on, the work highlights each model’s strengths, limitations, and best-suited astrophysical applications.
-                        </p>
-
-                        <!-- ==== Action buttons ==== -->
-                        <div style="margin-top:1rem;">
-                            <a href="https://github.com/Omega97/skymap_correlation/blob/main/A%20Comparative%20Analysis%20of%20Neural%20Network%20Methods%20for%20Source%20Detection%20and%20Classification%20in%20Astrophysics.pdf"
-                               class="contact-item"
-                               style="display:inline-flex;padding:.5rem 1rem;font-size:.9rem;margin-left:.5rem;">
-                                <i class="fas fa-file-pdf"></i> Read PDF
-                            </a>
+                        <div class="github-stats" data-repo="Omega97/skymap_correlation">
+                            <i class="fab fa-github"></i> <span class="stars">Loading...</span>
                         </div>
                     </div>
                 </div>
             </div>
-        </section>
-        <hr>
-
-        <!-- Bachelor's Intership -->
-        <div class="project">
-            <div class="project-content">
-                <img src="images/skymap_correlation.png" alt="Sky-map Correlation" class="project-image">
-                <div class="project-text">
-                    <h3>Astrophysical Data Analysis for Sky-map Correlation (INAF Internship)</h3>
-                    <p>
-                        I created a
-                        <a href="https://github.com/Omega97/skymap_correlation">GitHub repository</a>
-                        that allows us to study the local correlation map between two HEALPix sky-maps.
-                        The problem was open-ended, and I had to come up with my own solution, which was
-                        to make a library for calculating the local correlation efficiently.<br>
-                        <em>Supervisor: <a href="https://arts.units.it/cris/rp/rp76079">Elena Orlando (INAF)</a>.</em>
-                    </p>
-                </div>
-            </div>
-        </div>
-
-
-        <!-- Projects -->
-        <a class="section-anchor" id="projects"></a>
-        <section id="projects">
-            <h2 class="section-title">Projects</h2>
 
             <!-- Semantic Retrieval -->
             <div class="project">
@@ -531,6 +482,9 @@
                             generated by powerful LLMs.
                             <br><em>Collaborator: <a href="https://github.com/andreg24">Andrea Scomina</a>.</em>
                         </p>
+                        <div class="github-stats" data-repo="Omega97/SemanticSearch">
+                            <i class="fab fa-github"></i> <span class="stars">Loading...</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -552,6 +506,9 @@
                             under such conditions.<br>
                             <em>Collaborator: <a href="https://github.com/luispky">Luis Palacios Flores</a>.</em>
                         </p>
+                        <div class="github-stats" data-repo="luispky/XAI-RAI-UniTS">
+                            <i class="fab fa-github"></i> <span class="stars">Loading...</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -570,6 +527,9 @@
                             of Poker Texas Hold'Em. The bot is able to achieve human-level play for simpler
                             versions of the game, but it struggles when variability is too high.
                         </p>
+                        <div class="github-stats" data-repo="Omega97/MiniHoldEm">
+                            <i class="fab fa-github"></i> <span class="stars">Loading...</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -588,6 +548,9 @@
                             The roll-outs are truncated and evaluated with a value network. Both the value net and the policy are
                             trained on self-play data, generated with the help of a custom Mancala simulator that I created.
                         </p>
+                        <div class="github-stats" data-repo="Omega97/mancala">
+                            <i class="fab fa-github"></i> <span class="stars">Loading...</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -610,6 +573,9 @@
                             <a href="https://github.com/aleminutolo">Alessandro Minutolo </a>
                             .</em>
                         </p>
+                        <div class="github-stats" data-repo="kerlemn/MLOps_exam">
+                            <i class="fab fa-github"></i> <span class="stars">Loading...</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -623,15 +589,13 @@
                         <p>
                             In the rich and well-studied field of optimization, one generic use case is to find the
                             best one among a set of random variables, trading off between reward and exploration cost.
-                            <a href="https://github.com/Omega97/SearchHeuristic">This project</a>
+                            <a href="https://github.com/Omega97/SearchHeuristic">This small project</a>
                             provides a simple implementation and comparison of some of the best-performing heuristics,
                             ready to be applied in real-world scenarios.
-                            A very similar approach was implemented for
-                            <a href="https://it.wikipedia.org/wiki/AlphaGo">AlphaGo</a>,
-                            as it had to select the best move to play based on the results of the
-                            Monte Carlo tree search.
-
                         </p>
+                        <div class="github-stats" data-repo="Omega97/SearchHeuristic">
+                            <i class="fab fa-github"></i> <span class="stars">Loading...</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -665,6 +629,9 @@
                             that contains a library for simulating quantum logic gates. The library enables the user to
                             visualize the process of applying quantum operators and perform simple quantum algorithms.
                         </p>
+                        <div class="github-stats" data-repo="Omega97/quantum_logic_gates">
+                            <i class="fab fa-github"></i> <span class="stars">Loading...</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -683,6 +650,9 @@
                             The program makes the distinction between bosons and fermions. It can also handle potentials with
                             a singularity at the origin.
                         </p>
+                        <div class="github-stats" data-repo="Omega97/quantum_ground_state_simulation">
+                            <i class="fab fa-github"></i> <span class="stars">Loading...</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -702,6 +672,9 @@
                             that successfully implemented this tool, and it got featured in a
                             <a href="https://youtu.be/BXw8vQXxvqc?list=PLOjBt28t6kTvm_7W2lwWzEmXSJLWGaL5V&t=2205">YouTube video</a>.
                         </p>
+                        <div class="github-stats" data-repo="Omega97/Ramanujan_Machine">
+                            <i class="fab fa-github"></i> <span class="stars">Loading...</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -720,6 +693,9 @@
                             the least influential bits in the image, but only in high-entropy
                             locations.
                         </p>
+                        <div class="github-stats" data-repo="Omega97/steganography">
+                            <i class="fab fa-github"></i> <span class="stars">Loading...</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -737,6 +713,9 @@
                             This effort tested my knowledge and understanding of the subject,
                             particularly NN architecture and gradient descent.
                         </p>
+                        <div class="github-stats" data-repo="Omega97/neural_net_from_scratch">
+                            <i class="fab fa-github"></i> <span class="stars">Loading...</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -774,7 +753,7 @@
                             A personal passion project: a full-fledged narrative tabletop RPG inspired by games like D&amp;D,
                             set in a unique world blending mystery, philosophy, and exploration.
                             The system emphasizes collaborative storytelling and character-driven arcs.
-                            <br><a href="https://github.com/Omega97/Shimanami">🏝 Explore the world of Shimanami</a>.
+                            <a href="https://github.com/Omega97/Shimanami">Explore the world of Shimanami</a>.
                         </p>
                     </div>
                 </div>
@@ -788,28 +767,15 @@
                         <p>
                             A lightweight, modular game engine designed for fast-paced, token-driven gameplay.
                             Built as part of the <em>Shimanami</em> universe, it offers a fresh alternative to traditional dice mechanics.
-                            <br><a href="https://github.com/Omega97/Shimanami/blob/main/Meccaniche/New%20Beginning%20-%20The%20Manual.md">🇬🇧 Regole New Beginning</a>
-                            <br><a href="https://github.com/Omega97/Shimanami/blob/main/Meccaniche/New%20Beginning%20-%20Regole%20%E2%9A%AA.md">🇮🇹 New Beginning Rules</a>
+                            Rules available in Italian:
+                            <a href="https://github.com/Omega97/Shimanami/blob/main/Meccaniche/New%20Beginning%20-%20Regole%20⚦.md">New Beginning Rules</a>.
                         </p>
                     </div>
                 </div>
             </div>
         </section>
 
-
-        <!-- Other Facts -->
-        <section>
-            <h2 class="section-title">Other Facts About Me</h2>
-            <p>
-                [2015] Participant of “Scienze under 18”, an in-person activity that aims to bring math to the
-                attention of the public and young students (supervisor: Caterina Vicentini) <br />
-                [2007-2010] Awarded 22 Chess medals in official tournaments
-            </p>
-        </section>
-        <hr>
-
     </div>
-
 
     <!-- Back to Top -->
     <button id="back-to-top" class="back-to-top">
@@ -881,6 +847,5 @@
                 .catch(() => el.style.display = 'none');
         });
     </script>
-
 </body>
 </html>
