@@ -19,8 +19,7 @@
             color: #ECEFF4;
             text-align: center;
             padding: 1rem 0;
-            margin-bottom: 0rem;
-
+            margin-bottom: 0;
         }
         .container {
             max-width: 800px;
@@ -43,10 +42,78 @@
             border: 1px solid #D8DEE9;
             border-radius: 8px;
         }
-        .project h3 {
+
+        /* Banners */
+        .contact-inline {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            justify-content: center;
+            padding: 0rem 2rem 0rem;  /* top | horizontal | bottom */
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1rem;
+            background-color: #ECEFF4;
+            color: #2E3440;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: background-color 0.2s, color 0.2s;
+            white-space: nowrap;
+        }
+
+        .contact-item:hover:not(span) {
+            background-color: #D8DEE9;
+            color: #88C0D0;
+        }
+
+        @media (max-width: 480px) {
+            .contact-inline {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        /* Ensure it stacks on very small screens */
+        @media (max-width: 480px) {
+            .contact-inline {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        /* Project image layout */
+        .project-content {
+            display: flex;
+            gap: 1.2rem;
+            align-items: flex-start;
+        }
+        .project-image {
+            width: 120px;
+            height: auto;
+            border-radius: 6px;
+            object-fit: cover;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        .project-text h3 {
             color: #8FBCBB;
             margin-top: 0;
         }
+        @media (max-width: 600px) {
+            .project-content {
+                flex-direction: column;
+            }
+            .project-image {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+
         a {
             color: #88C0D0;
             text-decoration: none;
@@ -82,14 +149,11 @@
 </head>
 <body>
 
-
 <!-- Title Banner -->
 <header>
     <h1>Omar Cusma Fait</h1>
-    <p>Physics Bachelor's</p>
-    <p>Data Science and Artificial Intelligence Student at UniTS</p>
+    <p>Physics Bachelor's, Data Science and AI Student at UniTS</p>
 </header>
-
 
 <!-- Service Communications Banner -->
 <div id="service-communications" style="background-color:#ECEFF4;color:#2E3440;padding:1rem;font-family:monospace;white-space:pre-wrap;text-align:left;">
@@ -110,16 +174,22 @@
         });
 </script>
 
-
 <div class="container">
 
-    <section>
-        <h2 class="section-title">Contact</h2>
-        <div class="contact-item"><i class="fas fa-envelope contact-icon"></i> Email: <a href="mailto:omar.cusma.fait@gmail.com">omar.cusma.fait@gmail.com</a></div>
-        <div class="contact-item"><i class="fab fa-github contact-icon"></i> GitHub: <a href="https://github.com/omega97">github.com/Omega97</a></div>
-        <div class="contact-item"><i class="fab fa-telegram contact-icon"></i> Telegram: <a href="https://t.me/OmarFait">@OmarFait</a></div>
-        <div class="contact-item"><i class="fab fa-discord contact-icon"></i> Discord: @Omega97</div>
-    </section>
+    <div class="contact-inline">
+        <a href="mailto:omar.cusma.fait@gmail.com" class="contact-item">
+            <i class="fas fa-envelope"></i> Email
+        </a>
+        <a href="https://github.com/Omega97" class="contact-item">
+            <i class="fab fa-github"></i> GitHub
+        </a>
+        <a href="https://t.me/OmarFait" class="contact-item">
+            <i class="fab fa-telegram"></i> Telegram
+        </a>
+        <span class="contact-item">
+            <i class="fab fa-discord"></i> Discord
+        </span>
+    </div>
     <hr>
 
     <section>
@@ -147,12 +217,13 @@
     <hr>
 
     <section>
-        <h2 class="section-title">Language Skills</h2>
-        <ul>
-            <li>Italian (Mother tongue)</li>
-            <li>Slovenian (Mother tongue)</li>
-            <li>English (B2, British institutes)</li>
-        </ul>
+    <h2 class="section-title">Language Skills</h2>
+    <ul>
+        <li>🇮🇹 Italian (Mother tongue)</li>
+        <li>🇸🇮 Slovenian (Mother tongue)</li>
+        <li>🇬🇧 English (Proficient, B2)</li>
+        <li>🇯🇵 Japanese (Elementary)</li>
+    </ul>
     </section>
     <hr>
 
@@ -166,7 +237,6 @@
         </ul>
     </section>
     <hr>
-
 
     <section>
         <h2 class="section-title">Other Facts About Me</h2>
@@ -182,140 +252,214 @@
         <h2 class="section-title">Projects</h2>
 
         <div class="project">
-            <h3>Internship in Astrophysical Data Analysis for Sky-map Correlation</h3>
-            <p>
-                I created a
-                <a href="https://github.com/Omega97/skymap_correlation">GitHub repository</a>
-                that allows us to study the local correlation map between two HEALPix sky-maps.
-                The problem was open-ended, and I had to come up with my own solution, which was
-                to make a library for calculating the local correlation efficiently.
-                Supervisor: Elena Orlando</p>
+            <div class="project-content">
+                <img src="images/skymap_correlation.png" alt="Sky-map Correlation" class="project-image">
+                <div class="project-text">
+                    <h3>Astrophysical Data Analysis for Sky-map Correlation (INAF Internship)</h3>
+                    <p>
+                        I created a
+                        <a href="https://github.com/Omega97/skymap_correlation">GitHub repository</a>
+                        that allows us to study the local correlation map between two HEALPix sky-maps.
+                        The problem was open-ended, and I had to come up with my own solution, which was
+                        to make a library for calculating the local correlation efficiently.
+                        Supervisor: Elena Orlando
+                    </p>
+                </div>
+            </div>
         </div>
 
         <div class="project">
-            <h3>Semantic Retrieval</h3>
-            <p>
-                With this
-                <a href="https://github.com/Omega97/SemanticSearch">system</a>
-                you can find files in a given directory based on the actual meaning of
-                your queries, rather than keywords. It leavereges the semantic embeddings
-                generated by powerful LLMs.
-            </p>
+            <div class="project-content">
+                <img src="images/semantic_search.png" alt="Semantic Retrieval" class="project-image">
+                <div class="project-text">
+                    <h3>Semantic Retrieval (Academic Project)</h3>
+                    <p>
+                        With this
+                        <a href="https://github.com/Omega97/SemanticSearch">system</a>
+                        you can find files in a given directory based on the actual meaning of
+                        your queries, rather than keywords. It leverages the semantic embeddings
+                        generated by powerful LLMs.
+                    </p>
+                </div>
+            </div>
         </div>
 
         <div class="project">
-            <h3>Survay of Image Classifiers </h3>
-            <p>
-                Survey of various image classifiers, and the resilience of GradCAM to perturbations.
-            </p>
+            <div class="project-content">
+                <img src="images/image_classifiers.png" alt="Image Classifiers Survey" class="project-image">
+                <div class="project-text">
+                    <h3>Survey of Image Classifiers (Research Project)</h3>
+                    <p>
+                        Survey of various image classifiers, and the resilience of GradCAM to perturbations.
+                        This
+                        <a href="https://github.com/luispky/XAI-RAI-UniTS">project</a>
+                        investigates the robustness of popular computer vision models
+                        trained on the ImageNet dataset—AlexNet, ResNet50, Vision Transformer (ViT),
+                        and Swin Transformer—against adversarial attacks and perturbations.
+                        It also inspects the reliability of the explanations these models generate
+                        under such conditions.
+                    </p>
+                </div>
+            </div>
         </div>
 
         <div class="project">
-            <h3>Mini-Hold'Em</h3>
-            <p>
-                In
-                <a href="https://github.com/Omega97/GMOOptimizationProject">this project</a>
-                , I tested how evolutionary algorithms perform in mastering hidden information
-                card games of various degrees of complexity. Mini-Hold'em is a simplified version
-                of Poker Texas hold'Em. The bot is able to achieve human-level play for simpler
-                versions of the game, but it struggles when variability is too high.
-            </p>
+            <div class="project-content">
+                <img src="images/mini_holdem.png" alt="Mini-Hold'em Poker AI" class="project-image">
+                <div class="project-text">
+                    <h3>Mini-Hold'Em (Coursework Project)</h3>
+                    <p>
+                        In
+                        <a href="https://github.com/Omega97/GMOOptimizationProject">this project</a>,
+                        I tested how evolutionary algorithms perform in mastering hidden information
+                        card games of various degrees of complexity. Mini-Hold'em is a simplified version
+                        of Poker Texas Hold'Em. The bot is able to achieve human-level play for simpler
+                        versions of the game, but it struggles when variability is too high.
+                    </p>
+                </div>
+            </div>
         </div>
 
         <div class="project">
-            <h3>Mancala Self-Reinforcement Learning AI</h3>
-            <p>
-                I created a self-reinforcement learning AI
-                <a href="https://github.com/Omega97/mancala">self-reinforcement learning AI</a>
-                for the game of Mancala. The agent uses MCTS to choose the best move. A neural-network-based
-                policy is used to guide the search. Roll-outs are performed to evaluate the leaf nodes.
-                The roll-outs are truncated and evaluated with a value network. Both the value net and the policy are
-                trained on self-play data, generated with the help of a custom Mancala simulator that I created.
-
-            </p>
+            <div class="project-content">
+                <img src="images/mancala.png" alt="Mancala AI" class="project-image">
+                <div class="project-text">
+                    <h3>Mancala Self-Reinforcement Learning AI (Coursework Project)</h3>
+                    <p>
+                        I created a self-reinforcement learning AI
+                        <a href="https://github.com/Omega97/mancala">for the game of Mancala</a>.
+                        The agent uses MCTS to choose the best move. A neural-network-based
+                        policy is used to guide the search. Roll-outs are performed to evaluate the leaf nodes.
+                        The roll-outs are truncated and evaluated with a value network. Both the value net and the policy are
+                        trained on self-play data, generated with the help of a custom Mancala simulator that I created.
+                    </p>
+                </div>
+            </div>
         </div>
 
         <div class="project">
-            <h3>Wiki-Tok</h3>
-            <p>
-                This group project implements a recommendation system of Wikipedia pages. The user can
-                provide feedback for each page, and then he is fed with the next one, just like with the app TikTok.
-            </p>
+            <div class="project-content">
+                <img src="images/wiki_tok.png" alt="Wiki-Tok" class="project-image">
+                <div class="project-text">
+                    <h3>Wiki-Tok (Coursework Project)</h3>
+                    <p>
+                        This group project implements a recommendation system of Wikipedia pages. The user can
+                        provide feedback for each page, and then he is fed with the next one, just like with the app TikTok.
+                    </p>
+                </div>
+            </div>
         </div>
 
         <div class="project">
-            <h3>Search Heuristics</h3>
-            <p>
-                In the rich and well-studied field of optimization, one generic use case is to find the
-                best one among a set of random variables, trading off between reward and exploration cost.
-                <a href="https://github.com/Omega97/SearchHeuristic">This small project</a>
-                provides a simple implementation and comparison of some of the best-performing heuristics,
-                ready to be applied in real-world scenarios.
-            </p>
+            <div class="project-content">
+                <img src="images/search_heuristic.png" alt="Search Heuristics" class="project-image">
+                <div class="project-text">
+                    <h3>Search Heuristics (Independent Study)</h3>
+                    <p>
+                        In the rich and well-studied field of optimization, one generic use case is to find the
+                        best one among a set of random variables, trading off between reward and exploration cost.
+                        <a href="https://github.com/Omega97/SearchHeuristic">This small project</a>
+                        provides a simple implementation and comparison of some of the best-performing heuristics,
+                        ready to be applied in real-world scenarios.
+                    </p>
+                </div>
+            </div>
         </div>
 
         <div class="project">
-            <h3>Quantum Logic Gates</h3>
-            <p>
-                In this project, I tested my knowledge of quantum mechanics by creating a
-                <a href="https://github.com/Omega97/quantum_logic_gates">repository</a>
-                that contains a library for simulating quantum logic gates. The library enables the user to
-                visualize the process of applying quantum operators and perform simple quantum algorithms.
-            </p>
+            <div class="project-content">
+                <img src="images/quantum_logic_gates.png" alt="Quantum Logic Gates" class="project-image">
+                <div class="project-text">
+                    <h3>Quantum Logic Gates</h3>
+                    <p>
+                        In this project, I tested my knowledge of quantum mechanics by creating a
+                        <a href="https://github.com/Omega97/quantum_logic_gates">repository</a>
+                        that contains a library for simulating quantum logic gates. The library enables the user to
+                        visualize the process of applying quantum operators and perform simple quantum algorithms.
+                    </p>
+                </div>
+            </div>
         </div>
 
         <div class="project">
-            <h3>Steganography</h3>
-            <p>
-                I created a
-                <a href="https://github.com/Omega97/steganography">repository</a>
-                that allows you to explore how steganography effects the individual bits of an image.
-            </p>
+            <div class="project-content">
+                <img src="images/steganography.png" alt="Steganography" class="project-image">
+                <div class="project-text">
+                    <h3>Steganography (Independent Study)</h3>
+                    <p>
+                        I created a
+                        <a href="https://github.com/Omega97/steganography">repository</a>
+                        that allows you to explore how steganography affects the individual bits of an image.
+                    </p>
+                </div>
+            </div>
         </div>
 
         <div class="project">
-            <h3>Neural Networks from Scratch</h3>
-            <p>
-                This
-                <a href="https://github.com/Omega97/neural_net_from_scratch">repository</a>
-                that I created allowed me to create and train a neural network from scratch.
-                This effort tested my knowledge and understanding of the subject.
-            </p>
+            <div class="project-content">
+                <img src="images/neural_net_scratch.png" alt="Neural Network from Scratch" class="project-image">
+                <div class="project-text">
+                    <h3>Neural Networks from Scratch (Independent Project)</h3>
+                    <p>
+                        This
+                        <a href="https://github.com/Omega97/neural_net_from_scratch">repository</a>
+                        that I created allowed me to create and train a neural network from scratch.
+                        This effort tested my knowledge and understanding of the subject.
+                    </p>
+                </div>
+            </div>
         </div>
 
         <div class="project">
-            <h3>Ramanujan Machine</h3>
-            <p>
-                The
-                <a href="https://arxiv.org/abs/1907.00205">Ramanujan Machine</a>
-                is a tool based on continued fractions and gradient descent. It allows finding interesting
-                equations for important mathematical constants. I created a
-                <a href="https://github.com/Omega97/Ramanujan_Machine">GitHub repository</a>
-                that successfully implemented this tool, and it got featured in a
-                <a href="https://youtu.be/BXw8vQXxvqc?list=PLOjBt28t6kTvm_7W2lwWzEmXSJLWGaL5V&t=2205">Youtube video</a>
-                .
-            </p>
+            <div class="project-content">
+                <img src="images/ramanujan_machine.png" alt="Ramanujan Machine" class="project-image">
+                <div class="project-text">
+                    <h3>Ramanujan Machine (Independent Project)</h3>
+                    <p>
+                        The
+                        <a href="https://arxiv.org/abs/1907.00205">Ramanujan Machine</a>
+                        is a tool based on continued fractions and gradient descent. It allows finding interesting
+                        equations for important mathematical constants. I created a
+                        <a href="https://github.com/Omega97/Ramanujan_Machine">GitHub repository</a>
+                        that successfully implemented this tool, and it got featured in a
+                        <a href="https://youtu.be/BXw8vQXxvqc?list=PLOjBt28t6kTvm_7W2lwWzEmXSJLWGaL5V&t=2205">YouTube video</a>.
+                    </p>
+                </div>
+            </div>
         </div>
 
         <div class="project">
-            <h3>Quantum Ground State Simulation</h3>
-            <p>
-                Using my knowledge of quantum mechanics, I created a
-                <a href="https://github.com/Omega97/quantum_ground_state_simulation">repository</a>
-                that allows you to simulate the ground state of a quantum system of interacting particles.
-                Given the potential, the program will find the ground state of the system using the variational method.
-                The program makes the distinction between bosons and fermions. It can also handle potentials with
-                a singularity at the origin.
-            </p>
+            <div class="project-content">
+                <img src="images/quantum_ground_state.png" alt="Quantum Ground State Simulation" class="project-image">
+                <div class="project-text">
+                    <h3>Quantum Ground State Simulation (Independent Study)</h3>
+                    <p>
+                        Using my knowledge of quantum mechanics, I created a
+                        <a href="https://github.com/Omega97/quantum_ground_state_simulation">repository</a>
+                        that allows you to simulate the ground state of a quantum system of interacting particles.
+                        Given the potential, the program will find the ground state of the system using the variational method.
+                        The program makes the distinction between bosons and fermions. It can also handle potentials with
+                        a singularity at the origin.
+                    </p>
+                </div>
+            </div>
         </div>
 
         <div class="project">
-            <h3>Wave simulation</h3>
-            <p>
-                I created a simple simulation of a 2D wave using the Runge-Kutta method. The library allows for
-                different boundary conditions, initial conditions, and obstacles. The simulation can be exported to a GIF.
-            </p>
+            <div class="project-content">
+                <img src="images/wave_simulation.png" alt="2D Wave Simulation" class="project-image">
+                <div class="project-text">
+                    <h3>Wave simulation (Independent Project)</h3>
+                    <p>
+                        I created a simple
+                        <a href="https://www.youtube.com/shorts/EpZXkvy-BD8">simulation</a>
+                        of a 2D wave using the Runge-Kutta method. The library allows for
+                        different boundary conditions, initial conditions, and obstacles. The simulation can be exported to a GIF.
+                    </p>
+                </div>
+            </div>
         </div>
+
     </section>
 
 </div>
