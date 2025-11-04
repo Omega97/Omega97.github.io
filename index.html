@@ -349,10 +349,10 @@
         <div class="nav-container">
             <a href="#" class="nav-logo">OCF</a>
             <ul class="nav-menu">
-                <li><a href="#about">About</a></li>
+                <li><a href="#about">About Me</a></li>
                 <li><a href="#education">Education</a></li>
+                <li><a href="#thesis">Thesis & Internships</a></li>
                 <li><a href="#projects">Projects</a></li>
-                <li><a href="#contact">Contact</a></li>
             </ul>
         </div>
     </nav>
@@ -381,6 +381,9 @@
             </a>
             <a href="https://instagram.com/cusmafait" class="contact-item">
                 <i class="fab fa-instagram"></i> Instagram
+            </a>
+            <a href="https://www.linkedin.com/in/omar-cusma-fait-27589a307/" class="contact-item">
+            <i class="fab fa-linkedin-in"></i> LinkedIn
             </a>
             <span class="contact-item">
                 <i class="fab fa-discord"></i> Discord
@@ -436,7 +439,7 @@
         <section>
             <h2 class="section-title">Digital Skills</h2>
             <ul>
-                <li>Python (in-depth: bachelor’s + personal projects)</li>
+                <li>Python (in-depth: Bachelor’s + personal projects)</li>
                 <li>Libraries: NumPy, Matplotlib, PyTorch, Scikit-Learn, Pandas</li>
                 <li>Obsidian, Overleaf</li>
                 <li>R (Data Science and AI Master's)</li>
@@ -449,10 +452,10 @@
         <hr>
 
 
-        <!-- INTERNSHIP & THESIS -->
+        <!-- THESIS & INTERNSHIPS -->
         <a class="section-anchor" id="thesis"></a>
         <section class="content-section">
-            <h2 class="section-title">Bachelor’s Thesis</h2>
+            <h2 class="section-title">Thesis & Internships</h2>
 
             <div class="project">
                 <div class="project-content">
@@ -587,6 +590,96 @@
                             policy is used to guide the search. Roll-outs are performed to evaluate the leaf nodes.
                             The roll-outs are truncated and evaluated with a value network. Both the value net and the policy are
                             trained on self-play data, generated with the help of a custom Mancala simulator that I created.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Royal Game of Ur -->
+            <div class="project">
+                <div class="project-content">
+                    <img src="images/royal_game_ur.png" alt="Royal Game of Ur AI" class="project-image">
+                    <div class="project-text">
+                        <h3>Royal Game of Ur (Reinforcement Learning)</h3>
+                        <p>
+                            Implemented a superhuman AI for the 4,000-year-old Royal Game of Ur using
+                            <a href="https://it.wikipedia.org/wiki/AlphaZero">AlphaZero-style</a>
+                            self-play reinforcement learning. The agent learns exclusively through self-play,
+                            achieving strategic depth without human data.
+                            <br>
+                            <a href="https://github.com/Omega97/RoyalGameOfUr">Explore the implementation</a>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- tisext -->
+            <div class="project">
+                <div class="project-content">
+                    <img src="images/tisext.png" alt="tisext time series library" class="project-image">
+                    <div class="project-text">
+                        <h3>tisext – Intelligent Time Series Extension</h3>
+                        <p>
+                            A Python library that extends periodic time series by learning underlying patterns,
+                            even in noisy or interrupted signals. Unlike naive repetition, it models the true signal structure,
+                            supports batch processing, and includes optional plotting for visualization.
+                            <br>
+                            Install via <code>pip install tisext</code> or
+                            <a href="https://github.com/Omega97/tisext">view on GitHub</a>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Semantic Dynamics -->
+            <div class="project">
+                <div class="project-content">
+                    <img src="images/semantic_dynamics.png" alt="Semantic Dynamics paper" class="project-image">
+                    <div class="project-text">
+                        <h3>Semantic Dynamics – Physics of Language Models</h3>
+                        <p>
+                            In this article I combine Natural Language Processing and Semantic Embeddings to show how a sequence
+                            of tokens passed through a semantic embedding can be interpreted as a particle moving through a potential
+                            landscape, enabling the evaluation of thermodynamic quantities like temperature, energy, and entropy.
+                            <br>
+                            <a href="https://github.com/Omega97/semantic-dynamics/blob/main/Semantic_Dynamics.pdf"
+                               class="contact-item"
+                               style="display:inline-flex;padding:.5rem 1rem;font-size:.9rem;margin-top:.5rem;">
+                                <i class="fas fa-file-pdf"></i> Read Paper
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Telegram Bot -->
+            <div class="project">
+                <div class="project-content">
+                    <img src="images/telegram_bot.png" alt="Telegram Bot" class="project-image">
+                    <div class="project-text">
+                        <h3>Personal Telegram Bot</h3>
+                        <p>
+                            A multi-functional Telegram bot I built for personal use, featuring utilities like
+                            automated Secret Santa assignments, reminders, and custom interactions for my friend group.
+                            <br>
+                            <a href="https://github.com/Omega97/telegram_bot_omar_3">GitHub repository</a>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wordle Bot -->
+            <div class="project">
+                <div class="project-content">
+                    <img src="images/wordle.png" alt="Wordle Solver" class="project-image">
+                    <div class="project-text">
+                        <h3>Wordle Solver (Entropy Minimization)</h3>
+                        <p>
+                            A strategic helper for Wordle that selects guesses to maximally reduce uncertainty.
+                            Built on my <a href="https://github.com/Omega97/SearchHeuristic">search heuristic</a> framework,
+                            it evaluates word candidates by minimizing expected entropy after each guess.
+                            <br>
+                            <a href="https://github.com/Omega97/Wordle">See the solver in action</a>.
                         </p>
                     </div>
                 </div>
@@ -790,6 +883,87 @@
                             Built as part of the <em>Shimanami</em> universe, it offers a fresh alternative to traditional dice mechanics.
                             <br><a href="https://github.com/Omega97/Shimanami/blob/main/Meccaniche/New%20Beginning%20-%20The%20Manual.md">🇬🇧 Regole New Beginning</a>
                             <br><a href="https://github.com/Omega97/Shimanami/blob/main/Meccaniche/New%20Beginning%20-%20Regole%20%E2%9A%AA.md">🇮🇹 New Beginning Rules</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <hr>
+
+
+        <!-- Hackathons -->
+        <section>
+            <h2 class="section-title">Hackathons</h2>
+            <div class="project">
+                <div class="project-content">
+                    <img src="images/generali.png" alt="Generali Challenge 2025" class="project-image">
+                    <div class="project-text">
+                        <h3>Generali Challenge 2025</h3>
+                        <p>
+                            Developed a recommendation system for optional insurance coverages that truly enhance customer protection.
+                            Focused on explainability and personalization.
+                            <br>
+                            <em>Collaborators: Sepehr, Maddi, Vale, Paolo</em>
+                            <br>
+                            <a href="https://github.com/Omega97/HackathonGenerali2025">Project repo</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="project">
+                <div class="project-content">
+                    <img src="images/cybertec.png" alt="Cybertec Hackathon 2025" class="project-image">
+                    <div class="project-text">
+                        <h3>Hackathon Cybertec 2025</h3>
+                        <p>
+                            Built a global demand forecasting model using time series regression to predict real-world product demand.
+                            Handled multi-horizon, multi-region forecasting under uncertainty.
+                            <br>
+                            <em>Collaborators:
+                                <a href="https://github.com/Chromeilion">Uros Zivanovic</a>,
+                                <a href="https://github.com/luispky">Luis Fernando Palacios</a>,
+                                <a href="https://github.com/MeNimeL">Liza</a>
+                            </em>
+                            <br>
+                            <a href="https://github.com/Omega97/HackatonCybertec2025">Project repo</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="project">
+                <div class="project-content">
+                    <img src="images/aindo.png" alt="Aindo Hackathon" class="project-image">
+                    <div class="project-text">
+                        <h3>Aindo Hackathon</h3>
+                        <p>
+                            Collaborative hackathon project focused on data-driven innovation.
+                            <br>
+                            <em>Collaborators:
+                                <a href="https://github.com/Chromeilion">Uros Zivanovic</a>,
+                                <a href="https://github.com/GabrielePintus">Gabriele Pintus</a>,
+                                <a href="https://github.com/andivk01">Andrea Ivkovic</a>
+                            </em>
+                            <br>
+                            <a href="https://github.com/GabrielePintus/AindoHackaton">Project repo</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="project">
+                <div class="project-content">
+                    <img src="images/google.png" alt="Google Hash Code 2019" class="project-image">
+                    <div class="project-text">
+                        <h3>Google Hash Code 2019</h3>
+                        <p>
+                            Participated in Google’s worldwide algorithmic programming competition, solving complex optimization problems under time constraints.
+                            <br>
+                            <em>Collaborators:
+                                <a href="https://github.com/redsnic">Nicolò Rossi</a>,
+                                <a href="https://github.com/mezzilla">Simone Mezzavilla</a>,
+                                Kleit Rrokja
+                            </em>
+                            <br>
+                            <a href="https://github.com/Omega97/google_hash">Solutions archive</a>
                         </p>
                     </div>
                 </div>
