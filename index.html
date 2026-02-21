@@ -324,6 +324,112 @@
             top: -65px;
             visibility: hidden;
         }
+
+
+        /* Tank Tactics Game State Box Styling */
+        .game-state-panel {
+            /* --- Color Variables (Light Mode Default) --- */
+            --gs-bg: #ffffff;
+            --gs-text: #333333;
+            --gs-border: #e0e0e0;
+            --gs-code-bg: #f8f9fa;
+            --gs-code-text: #444444;
+            --gs-accent: #007bff;
+            --gs-status: #28a745;
+
+            /* --- Layout & Structure --- */
+            margin: 60px auto;
+            max-width: 800px;
+            background: var(--gs-bg);
+            color: var(--gs-text);
+            border: 1px solid var(--gs-border);
+            border-left: 5px solid var(--gs-accent);
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            padding: 25px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
+            }
+
+        .game-state-panel:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .game-state-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--gs-border);
+            padding-bottom: 10px;
+        }
+
+        .game-state-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--gs-text);
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status-indicator {
+            font-size: 0.8rem;
+            color: var(--gs-status);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-indicator::before {
+            content: '';
+            display: block;
+            width: 8px;
+            height: 8px;
+            background-color: var(--gs-status);
+            border-radius: 50%;
+            box-shadow: 0 0 5px var(--gs-status);
+        }
+
+        .game-state-content {
+            background: var(--gs-code-bg);
+            color: var(--gs-code-text);
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9rem;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid var(--gs-border);
+        }
+
+        /* --- Dark Mode Override --- */
+        @media (prefers-color-scheme: dark) {
+            .game-state-panel {
+                --gs-bg: #1e1e1e;
+                --gs-text: #e0e0e0;
+                --gs-border: #333333;
+                --gs-code-bg: #2d2d2d;
+                --gs-code-text: #cccccc;
+                --gs-accent: #3d8bfd; /* Slightly brighter blue for dark mode */
+            }
+            .game-state-panel:hover {
+                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            }
+        }
+
+        /* Scrollbar styling */
+        .game-state-content::-webkit-scrollbar { width: 8px; height: 8px; }
+        .game-state-content::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+        @media (prefers-color-scheme: dark) {
+            .game-state-content::-webkit-scrollbar-thumb { background: #555; }
+        }
+
     </style>
 </head>
 <body>
@@ -1112,6 +1218,32 @@
                 .catch(() => el.style.display = 'none');
         });
     </script>
+
+
+    <!-- Tank Tactics Game State Section -->
+    <section class="game-state-panel">
+    <div class="game-state-header">
+        <h3 class="game-state-title">TT Game State</h3>
+        <span class="status-indicator">Live Feed</span>
+    </div>
+    <pre id="tt-game-state" class="game-state-content">Initializing connection to game state...</pre>
+    </section>
+
+    <script>
+        fetch('tt_game_state.txt')
+            .then(response => {
+                if (!response.ok) throw new Error("File not found");
+                return response.text();
+            })
+            .then(text => {
+                document.getElementById('tt-game-state').textContent = text;
+            })
+            .catch(error => {
+                document.getElementById('tt-game-state').textContent = "Unable to load game state.\nError: " + error.message;
+                document.getElementById('tt-game-state').style.color = "#dc3545";
+            });
+    </script>
+
 
 </body>
 </html>
