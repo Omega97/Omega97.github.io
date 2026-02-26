@@ -7,14 +7,15 @@ import inspect
 import sys
 import os
 from typing import Dict
+import hashlib
 
 
 # === BOARD ===
 NUMBERS = ("0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣")
+# NUMBERS = ("⓪ ", "① ", "② ", "③ ", "④ ", "⑤ ", "⑥ ", "⑦ ", "⑧ ", "⑨ ")
 BLANK_TILE = "➗"
 RANGE_TILE = "➕"
 CORNER_TILE = "⏹️"
-
 
 # === Default Params ===
 DEFAULT_BOARD_SIZE = 10
@@ -33,15 +34,19 @@ class TokenNotFoundError(GameError): pass
 class NotEnoughAPError(GameError): pass
 class OutOfRangeError(GameError): pass
 class InvalidMoveError(GameError): pass
+class BoardSizeError(GameError): pass
 
 
 class Game:
 
-    def __init__(self, players: Dict[str, list] = None,
-                 board_size=DEFAULT_BOARD_SIZE, random_seed=DEFAULT_RANDOM_SEED,
-                 life_cap=DEFAULT_LIFE_CAP, action_range=DEFAULT_ACTION_RANGE,
-                 heal_self_cost=DEFAULT_HEAL_SELF_COST, gift_heart_cost=DEFAULT_GIFT_HEART_COST,
-                 upgrade_cost=DEFAULT_UPGRADE_COST, capture_cost=DEFAULT_CAPTURE_COST):
+    def __init__(self, players: Dict[str, list] = None, board_size=None,
+                 random_seed=DEFAULT_RANDOM_SEED,
+                 life_cap=DEFAULT_LIFE_CAP,
+                 action_range=DEFAULT_ACTION_RANGE,
+                 heal_self_cost=DEFAULT_HEAL_SELF_COST,
+                 gift_heart_cost=DEFAULT_GIFT_HEART_COST,
+                 upgrade_cost=DEFAULT_UPGRADE_COST,
+                 capture_cost=DEFAULT_CAPTURE_COST):
         """
         Actions cost AP (action points).
         Player may shoot each other, gift AP, heal, and upgrade their tokens.
@@ -50,7 +55,7 @@ class Game:
         each tank that has a vote from the jury receives one more AP.
         """
         self.players = players if players else dict()  # dict of name: tokens with all the players
-        self.tokens: Dict[str: dict] = None  # dict of token: owner, position, life, AP
+        self.tokens: Dict[str: dict] = dict()  # dict of token: owner, position, life, AP
         self.jury: Dict[str: str] = dict()  # dict of player: token
         self.board_size = board_size
         self.life_cap = life_cap
@@ -64,7 +69,8 @@ class Game:
         self.turn_counter = None
 
         self.set_random_seed(random_seed)
-        self.init_tokens()
+        if self.board_size is not None:
+            self.init_tokens()
 
     def get_life(self, token):
         return self.tokens[token]['life']
@@ -78,7 +84,7 @@ class Game:
             tokens = self.players[player]
             yield player, tokens
 
-    def _iter_token_items(self):
+    def iter_token_items(self):
         """Deterministically iterate over tokens.items()"""
         for token in sorted(self.tokens):
             items = self.tokens[token]
@@ -90,28 +96,46 @@ class Game:
             tokens = self.jury[player]
             yield player, tokens
 
+    def set_random_token_position(self, *tokens):
+        positions = [(i, j) for i in range(self.board_size) for j in range(self.board_size)]
+        existing_positions = {info["position"] for token, info in self.iter_token_items()}
+        available_positions = [p for p in positions if p not in existing_positions]
+
+        if not len(available_positions):
+            raise BoardSizeError("Not enough space on board for new tokens")
+
+        random.shuffle(available_positions)
+
+        msg = 'New token positions: '
+        for token in tokens:
+            position = available_positions.pop()
+            self.tokens[token]['position'] = position
+            msg += f" {token} -> {positions} "
+
+        return msg
+
     def init_tokens(self):
         """
         Set the initial values of the tokens.
         Initialization is the same regardless of the order of players/tokens.
         """
-        positions = [(i, j) for i in range(self.board_size) for j in range(self.board_size)]
-        random.shuffle(positions)
-
         self.turn_counter = 0
         self.tokens = dict()
 
         for player, tokens in self._iter_player_items():
             for token in sorted(tokens):
-                position = positions.pop()
                 self.tokens[token] = {
                     "owner": player,
-                    "position": position,
+                    "position": None,
                     "AP": 0,
                     "life": self.life_cap,
                     "life_cap": self.life_cap,
                     "range": self.action_range,
                 }
+
+        # If board is ready then init positions too
+        if self.board_size is not None:
+            self.set_random_token_position(*sorted(self.tokens))
 
     def get_tile(self, x, y):
         """
@@ -122,12 +146,12 @@ class Game:
         pos = (x, y)
 
         # First check if there's a token at this position
-        for token, info in self._iter_token_items():
+        for token, info in self.iter_token_items():
             if info["position"] == pos:
                 return token
 
         # Color differently tiles close to live tokens
-        for token, info in self._iter_token_items():
+        for token, info in self.iter_token_items():
             if self.get_life(token) > 0:
                 # Check only tokens owned by the specified player that are alive
                 token_pos = info["position"]
@@ -144,11 +168,8 @@ class Game:
         black = info["life_cap"] - info["life"]
         return f'[{"❤️" * red}{"🖤" * black}]'
 
-    def __str__(self):
-        # title
+    def get_board_tiles_repr(self):
         out = f'Turn {self.turn_counter}\n'
-
-        # board
         n_numbers = len(NUMBERS)
         for j in reversed(range(self.board_size)):
             out += NUMBERS[j % n_numbers]
@@ -158,8 +179,10 @@ class Game:
         out += CORNER_TILE
         for i in range(self.board_size):
             out += NUMBERS[i % n_numbers]
+        return out
 
-        # Life, AP
+    def get_player_life_repr(self):
+        out = ''
         for player, tokens in self._iter_player_items():
             if not self.is_player_eliminated(player):
                 out += f'\n\n{player}'
@@ -167,25 +190,37 @@ class Game:
                     life_bar = self._get_lifebar(token)
                     ap = self.get_ap(token)
                     out += f'\n {token} {life_bar} {"⚡️" * ap}'
+        return out
 
-        # Jury (display vote if voted, otw just display)
-        out += '\n'
+    def get_jury_repr(self):
+        """Jury (display vote if voted, otw just display user)"""
+        out = ''
         for player, token in self._iter_player_items():
             if self.is_player_eliminated(player):
                 if player in self.jury:
                     out += f'\n{player:>7} -> {self.jury[player]}'
                 else:
                     out += f'\n{player:>7} -> no vote'
-
-        # Priority
-        out += '\nPriority: ' + ", ".join(self.priority) 
-
         return out
+
+    def __str__(self):
+        self.force_board_size_set()
+        out = self.get_board_tiles_repr()
+        out += self.get_player_life_repr()
+        out += '\n'
+        out += self.get_jury_repr()
+        out += '\nPriority: ' + ", ".join(self.priority)
+        return out
+
+    def force_board_size_set(self):
+        if self.board_size is None:
+            self.set_board_size()
 
     # === Exceptions ===
 
     def check_tokens_exist(self, *tokens):
         """Raise exception if any of the tokens don't exist."""
+        self.force_board_size_set()
         for token in tokens:
             if token not in self.tokens:
                 raise TokenNotFoundError(token)
@@ -253,7 +288,7 @@ class Game:
 
     def is_player_eliminated(self, player) -> bool:
         """Returns True if player has no living tokens left"""
-        for token, info in self._iter_token_items():
+        for token, info in self.iter_token_items():
             if info["owner"] == player and info["life"] > 0:
                 return False
         return True
@@ -278,6 +313,7 @@ class Game:
         """
         if not self.tokens:
             raise GameError("No tokens on board.")
+        self.force_board_size_set()
 
         # update turn counter
         self.turn_counter += 1
@@ -286,7 +322,7 @@ class Game:
         jury_bonus_count = 0
 
         # 1) +1 AP to every living token
-        for token, info in self._iter_token_items():
+        for token, info in self.iter_token_items():
             if info["life"] >= 1:
                 info["AP"] += 1
                 alive_count += 1
@@ -570,7 +606,7 @@ class Game:
 
     def add_player(self, player_name: str):
         """
-        Add a new player.
+        Add a new player to dict of player: tokens
         """
         if player_name in self.players:
             raise GameError(f"Player '{player_name}' already exists")
@@ -595,26 +631,25 @@ class Game:
         # Add player
         self.players[owner].append(token)
 
-        # Initialize tokens with random positions
-        positions = [(i, j) for i in range(self.board_size) for j in range(self.board_size)]
-        existing_positions = {info["position"] for token, info in self._iter_token_items()}
-        available_positions = [p for p in positions if p not in existing_positions]
-
-        if not len(available_positions):
-            raise GameError("Not enough space on board for new tokens")
-
-        random.shuffle(available_positions)
-
-        position = available_positions.pop()
+        # Initialize tokens
         self.tokens[token] = {
             "owner": owner,
-            "position": position,
+            "position": None,
             "AP": 0,
             "life": self.life_cap,
             "life_cap": self.life_cap,
-            "range": self.life_cap - 1,
+            "range": self.action_range,
         }
-        return f"Added {token} to {owner}"
+
+        # Init position
+        if self.board_size is not None:
+            self.set_random_token_position(token)
+
+        msg = f"Added {token} to {owner}"
+        position = self.tokens[token]['position']
+        if position is not None:
+            msg += f" at {position}"
+        return msg
 
     def set_random_seed(self, seed: int):
         """
@@ -648,15 +683,14 @@ class Game:
     def set_board_size(self, size: int | str = None):
         """
         Change the board size. WARNING: This resets the game state!
-        Usage: set_board_size(10)
         """
         default_size = self.get_default_board_size()
         if size is None or type(size) is str:
             size = default_size
-
         if size ** 2 <= len(self.tokens):
-            raise ValueError('Board too small!')
+            raise BoardSizeError('Board too small!')
 
+        # Set board size
         self.board_size = size
 
         # Reset random seed & restart tokens
@@ -675,7 +709,7 @@ class Game:
         Usage: set_upgrade_cost(3)
         """
         if cost < 1:
-            raise GameError("Upgrade cost must be at least 1")
+            raise OutOfRangeError("Upgrade cost must be at least 1")
         self.upgrade_cost = cost
         return f"Upgrade cost set to {cost} AP"
 
@@ -685,7 +719,7 @@ class Game:
         Usage: set_heal_self_cost(2)
         """
         if cost < 1:
-            raise GameError("Heal cost must be at least 1")
+            raise OutOfRangeError("Heal cost must be at least 1")
 
         self.heal_self_cost = cost
         return f"Heal self cost set to {cost} AP"
@@ -696,7 +730,7 @@ class Game:
         Usage: set_gift_heart_cost(2)
         """
         if cost < 1:
-            raise GameError("Gift heart cost must be at least 1")
+            raise OutOfRangeError("Gift heart cost must be at least 1")
 
         self.gift_heart_cost = cost
         return f"Gift heart cost set to {cost} AP"
@@ -764,13 +798,12 @@ def run_commands_from_file(game: Game, filepath: str):
     """
     Run all the commands in the file.
     """
-    print(f"\n📜 Executing {filepath}\n")
+    print(f"📜 Executing {filepath}")
     report = ''
     with open(filepath, "r", encoding="utf-8") as f:
         for i, line in enumerate(f, 1):
             result = execute_text_command(game, line)
-            if result:
-                report += f"{result}\n"
+            report += f"{result}\n"
     return report
 
 
@@ -781,7 +814,23 @@ def test(filepath="commands.txt"):
     print(game)
 
 
-def main():
+def get_file_hash(filepath):
+    """Compute MD5 hash of file contents."""
+    try:
+        with open(filepath, "rb") as f:
+            return hashlib.md5(f.read()).hexdigest()
+    except FileNotFoundError:
+        return None
+
+
+def clear_screen():
+    """Clear the terminal screen."""
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+
+def main(period=0.5):
+    import time
+
     # Set default file paths
     input_file = "commands.txt"
     output_file = "game_state.txt"
@@ -792,44 +841,82 @@ def main():
     if len(sys.argv) >= 3:
         output_file = sys.argv[2]
 
-    # Validate input file exists
+    # Validate input file exists (Do this BEFORE clearing screen so errors are visible)
     if not os.path.exists(input_file):
-        print(f"❌ Error: Input file '{input_file}' not found!")
-        print(f"   Please create '{input_file}' with game commands.")
+        print(f"❌ Error: Input file '{input_file}' not found! ")
+        print(f"   Please create '{input_file}' with game commands. ")
         sys.exit(1)
 
-    print("🔄 Continuous mode started.")
-    print("Press ENTER to recompute the game state.")
-    print("Type 'q' and press ENTER to quit.\n")
+    # Initial Screen Clear and Header
+    clear_screen()
+    print(f"🔄 Auto-watch mode started (period={period:.2f}).")
+    print("Press Ctrl+C to quit.")
 
-    while True:
+    # Track previous file hash
+    prev_file_hash = get_file_hash(input_file)
+    print(f"📊 Initial file hash: {prev_file_hash[:8]}...")
 
-        # Create fresh game instance each cycle
-        game = Game()
+    # --- INITIAL DISPLAY ---
+    game = Game()
+    try:
+        run_commands_from_file(game, input_file)
+        game_state = str(game)
 
-        try:
-            # Re-run commands from file
-            run_commands_from_file(game, input_file)
+        with open(output_file, "w", encoding="utf-8") as f:
+            f.write(game_state)
 
-            # Compute final game state
-            game_state = str(game)
+        print(f"✅ Game state saved to: {output_file}\n")
+        print(game_state)
+    except Exception as e:
+        print(f"❌ Error processing commands: {e}")
 
-            # Save to file
-            with open(output_file, "w", encoding="utf-8") as f:
-                f.write(game_state)
-            print(f"\n✅ Game state saved to: {output_file}\n")
-            print(game_state)
-        except Exception as e:
-            print(f"Error: {e}")
+    try:
+        while True:
+            time.sleep(period)
 
-        print("\nPress ENTER to recompute again (or 'q' to quit).")
+            # Check if file still exists
+            if not os.path.exists(input_file):
+                print(f"⚠️  Warning: '{input_file}' no longer exists! ")
+                continue
 
-        user_input = input()
-        if user_input.lower() == "q":
-            print("👋 Exiting.")
-            break
+            # Compute current file hash
+            current_file_hash = get_file_hash(input_file)
+
+            # Check if file hash changed
+            if current_file_hash != prev_file_hash:
+                # Clear screen before updating display
+                clear_screen()
+                print(f"🔄 Auto-watch mode started (period={period:.2f}).")
+                print("Press Ctrl+C to quit.")
+
+                # Create fresh game instance
+                game = Game()
+
+                try:
+                    # Re-run commands from file
+                    run_commands_from_file(game, input_file)
+
+                    # Compute final game state
+                    game_state = str(game)
+
+                    # Save to file
+                    with open(output_file, "w", encoding="utf-8") as f:
+                        f.write(game_state)
+
+                    print(f"✅ Game state saved to: {output_file}\n")
+                    print(game_state)
+
+                except Exception as e:
+                    print(f"❌ Error processing commands: {e}")
+
+                # Update previous file hash
+                prev_file_hash = current_file_hash
+
+    except KeyboardInterrupt:
+        clear_screen()
+        print("👋 Exiting.")
 
 
 if __name__ == '__main__':
-    test()
-    # main()
+    # test()
+    main()
