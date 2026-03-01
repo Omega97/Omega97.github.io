@@ -10,6 +10,7 @@ import hashlib
 import inspect
 from typing import Dict, List, Iterator
 from dataclasses import dataclass
+from abc import ABC, abstractmethod
 
 
 # === BOARD ===
@@ -20,17 +21,15 @@ CORNER_TILE = "⏹️"
 
 # === ASCII BOARD ===
 NUMBERS_ASCII = [" "] * 10
-# NUMBERS_ASCII = ("⓪", "①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨")
 BLANK_TILE_ASCII = "#"
 RANGE_TILE_ASCII = "+"
 CORNER_TILE_ASCII = " "
 
 # === Default Params ===
-DEFAULT_BOARD_SIZE = 10
+DEFAULT_MINIMUM_BOARD_SIZE = 5
 DEFAULT_RANDOM_SEED = 0
 DEFAULT_LIFE_CAP = 3
 DEFAULT_ACTION_RANGE = 2
-DEFAULT_MINIMUM_BOARD_SIZE = 5
 DEFAULT_GIFT_HEART_COST = 1
 DEFAULT_HEAL_SELF_COST = 2
 DEFAULT_UPGRADE_COST = 5
@@ -58,7 +57,9 @@ def chebyshev_distance(pos1, pos2):
     """Chebyshev distance (max(dx, dy)) - king-move style in chess"""
     x1, y1 = pos1
     x2, y2 = pos2
-    return max(abs(x1 - x2), abs(y1 - y2))
+    dx = abs(x1 - x2)
+    dy = abs(y1 - y2)
+    return max(dx, dy)
 
 
 @dataclass
@@ -69,6 +70,599 @@ class Token:
     life_cap: int
     range: int
     ap: int
+
+
+# ===== Commands =====
+
+
+class Command(ABC):
+    def __init__(self, game: 'Game', player: str | None = None):
+        self.game = game
+        self.player = player
+
+    @abstractmethod
+    def execute(self) -> str:
+        pass
+
+
+class NextTurnCommand(Command):
+    def execute(self) -> str:
+        """
+        Gives 1 AP to all live tokens.
+        Then, every token voted by the jury gets also +1 AP.
+        """
+        if not self.game.tokens:
+            raise TokenError("No tokens on board.")
+        self.game.force_board_size_set()
+
+        # update turn counter
+        self.game.turn_counter += 1
+
+        alive_count = 0
+        jury_bonus_count = 0
+
+        # 1) +1 AP to every living token
+        for token, info in self.game.iter_token_items():
+            if self.game.get_life(token) >= 1:
+                self.game.increase_ap(token, amount=1)
+                alive_count += 1
+
+        # 2) +1 extra AP to each jury representative token
+        for player, jury_token in self.game.iter_jury_items():
+            if jury_token in self.game.tokens:
+                if self.game.get_life(jury_token) >= 1:
+                    self.game.increase_ap(jury_token, amount=1)
+                    jury_bonus_count += 1
+
+        summary = f"[{self.game.turn_counter}] Gave +1 ⚡️ to {alive_count} living token"
+        if alive_count != 1:
+            summary += "s"
+
+        if jury_bonus_count > 0:
+            summary += f" + extra {jury_bonus_count} ⚡️ from jury"
+
+        return summary
+
+
+class MoveCommand(Command):
+    def __init__(self, game: 'Game', token: str, dx: int, dy: int, player: str | None = None):
+        super().__init__(game, player)
+        self.token = token
+        self.dx = dx
+        self.dy = dy
+
+    def execute(self) -> str:
+        """
+        move [dx] [dy]
+        Move the token by one square to the target position.
+        Cost: 1 AP
+        """
+        game = self.game
+        token = self.token
+        dx = self.dx
+        dy = self.dy
+        board_size = game.get_board_size()
+
+        game.check_tokens_exist(token)
+        game.check_has_ap(token, 1)
+
+        # Calculate target position from current position + direction
+        info = game.get_token_info(token)
+        curr_x, curr_y = info.position
+        x = curr_x + dx
+        y = curr_y + dy
+        new_position = (x, y)
+
+        # Check if token is alive
+        # Tokens with 0 HP remain on the board but cannot take actions
+        if info.life <= 0:
+            raise InvalidMoveError("Error: Token has 0 HP and cannot move")
+
+        # Check board boundaries
+        if not (0 <= x < board_size and 0 <= y < board_size):
+            raise InvalidMoveError("Target position is out of bounds")
+
+        # Check distance (must be exactly 1 square away, Chebyshev distance)
+        # This allows horizontal, vertical, and diagonal moves
+        if chebyshev_distance(new_position, info.position) != 1:
+            raise RangeError("Target position must be adjacent (1 square away)")
+
+        # Check collision (target tile must be empty)
+        # get_tile returns the token name if occupied, or BLANK_TILE if empty
+        if game.get_tile(x, y) not in (BLANK_TILE, RANGE_TILE):
+            raise InvalidMoveError("Target position is occupied by another token")
+
+        # Execute Move
+        info.position = new_position
+        game.spend_ap(token, 1)
+
+        # Update priority
+        game.update_priority(game.get_owner(token))
+
+        return f"{token} moved to ({x}, {y}) (-1 ⚡️)"
+
+
+class GiftCommand(Command):
+    def __init__(self, game: 'Game', token_1: str, token_2: str, n_points: int = 1, player: str | None = None):
+        super().__init__(game, player)
+        self.token_1 = token_1
+        self.token_2 = token_2
+        self.n_points = n_points
+
+    def execute(self) -> str:
+        """
+        gift [token_1] [token_2]
+        Gift 1 AP from token_1 to token_2
+        Cost: 1 AP from token_1
+        """
+        game = self.game
+        token_1 = self.token_1
+        token_2 = self.token_2
+        n_points = self.n_points
+
+        game.check_tokens_exist(token_1, token_2)
+        game.check_has_ap(token_1, n_points)
+        game.check_range(token_1, token_2)
+
+        # Execute gift
+        game.spend_ap(token_1, n_points)
+        game.increase_ap(token_2, n_points)
+
+        # Update priority
+        game.update_priority(game.get_owner(token_1))
+
+        return f"{token_1} → {token_2} : gifted {n_points} ⚡️"
+
+
+class ShootCommand(Command):
+    def __init__(self, game: 'Game', token_1: str, token_2: str, player: str | None = None):
+        super().__init__(game, player)
+        self.token_1 = token_1
+        self.token_2 = token_2
+
+    def execute(self) -> str:
+        """
+        shoot [token_1] [token_2]
+        Shoot at token_2 → -1 life.
+        If you kill a token, you steal their AP.
+        Cost: 1 AP
+        """
+        game = self.game
+        token_1 = self.token_1
+        token_2 = self.token_2
+
+        game.check_tokens_exist(token_1, token_2)
+        game.check_has_ap(token_1, 1)
+        game.check_has_life(token_2)
+        game.check_range(token_1, token_2)
+
+        # Execute shoot
+        game.spend_ap(token_1, amount=1)
+        game.decrease_life(token_2, amount=1)
+        target_owner = game.get_owner(token_2)
+
+        # Update priority
+        game.update_priority(game.get_owner(token_1))
+
+        # Check elimination to steal AP
+        life = game.get_life(token_2)
+        if life == 0:
+            stolen = game.get_ap(token_2)
+            game.transfer_ap(token_2, token_1, stolen)
+
+        # Report
+        msg = (f"{token_1} shot at {token_2}!  "
+               f"{target_owner}'s {token_2} now has {life} life {game.get_lifebar(token_2)}")
+        if game.is_player_eliminated(target_owner):
+            game.add_to_jury(target_owner)
+            msg += f" → {target_owner} eliminated and sent to jury!"
+
+        return msg
+
+
+class HealCommand(Command):
+    def __init__(self, game: 'Game', token: str, player: str | None = None):
+        super().__init__(game, player)
+        self.token = token
+
+    def execute(self) -> str:
+        """
+        heal [token]
+        Heal own token +1 life (up to life_cap)
+        Cost: 2 AP
+        """
+        game = self.game
+        token = self.token
+
+        game.check_tokens_exist(token)
+        game.check_has_ap(token, game.heal_self_cost)
+        game.check_life_cap(token)
+
+        # Execute heal
+        game.spend_ap(token, game.heal_self_cost)
+        game.increase_life(token)
+
+        # Update priority
+        game.update_priority(game.get_owner(token))
+
+        return f"{token} healed +1 💚 {game.get_lifebar(token)}"
+
+
+class UpgradeCommand(Command):
+    def __init__(self, game: 'Game', token: str, player: str | None = None):
+        super().__init__(game, player)
+        self.token = token
+
+    def execute(self) -> str:
+        """
+        upgrade [token]
+        Target token gets:
+        - range increased by +1
+        - life-cap increased by +1
+        - healed by +1 heart
+        Cost: 5 AP
+        """
+        game = self.game
+        token = self.token
+
+        game.check_tokens_exist(token)
+        game.check_has_ap(token, game.upgrade_cost)
+
+        # Execute upgrade
+        game.spend_ap(token, game.upgrade_cost)
+        game.increase_life_cap(token)
+        game.increase_life(token)
+        game.increase_range(token)
+
+        # Update priority
+        game.update_priority(game.get_owner(token))
+
+        # Report
+        new_cap = game.get_life_cap(token)
+        new_range = game.get_range(token)
+        msg = (f"{token} upgraded! "
+               f"New life cap: {new_cap} {game.get_lifebar(token)}, "
+               f"range: {new_range} {'🏹' * new_range}")
+
+        return msg
+
+
+class GiftHeartCommand(Command):
+    def __init__(self, game: 'Game', token_1: str, token_2: str, n_hearts: int = 1, player: str | None = None):
+        super().__init__(game, player)
+        self.token_1 = token_1
+        self.token_2 = token_2
+        self.n_hearts = n_hearts
+
+    def execute(self) -> str:
+        """
+        gift_hear [token_1] [token_2]
+        Gift 1 heart from token_1 to token_2.
+        token_1 can't remain without hears.
+        token_2 must be in range of token_1.
+        If token_2's owner was in jury → bring them back.
+        Cost: 1 AP
+        """
+        game = self.game
+        token_1 = self.token_1
+        token_2 = self.token_2
+        n_hearts = self.n_hearts
+
+        game.check_tokens_exist(token_1, token_2)
+        game.check_has_ap(token_1, game.gift_heart_cost)
+        game.check_range(token_1, token_2)
+        game.check_has_life(token_1, amount=n_hearts+1)
+        game.check_life_cap(token_2, extra_hearts=+n_hearts)
+
+        # Execute gift heart
+        game.spend_ap(token_1, game.gift_heart_cost)
+        game.decrease_life(token_1, n_hearts)
+        game.increase_life(token_2, n_hearts)
+
+        # Check if we revive someone from jury
+        target_owner = game.get_owner(token_2)
+        msg = f"{token_1} → {token_2} : gifted 1 ❤️"
+        if target_owner in game.jury:
+            game.remove_from_jury(target_owner)
+            msg += f" → {target_owner} revived from jury!"
+
+        # Update priority
+        game.update_priority(game.get_owner(token_1))
+
+        # Check if donor died from this action
+        donor_owner = game.get_owner(token_1)
+        if game.get_life(token_1) == 0 and game.is_player_eliminated(donor_owner):
+            msg += f" → {donor_owner} sacrificed last heart"
+
+        return msg
+
+
+class CaptureCommand(Command):
+    def __init__(self, game: 'Game', token_1: str, token_2: str, player: str | None = None):
+        super().__init__(game, player)
+        self.token_1 = token_1
+        self.token_2 = token_2
+
+    def execute(self) -> str:
+        """
+        capture [token_1] [token_2]
+        Capture a KO enemy token and add it to your own pieces.
+        The captured token gets +1 heart.
+        Requires token_1 in contact with token_2 (distance=1).
+        Cost: 5 AP
+        """
+        game = self.game
+        token_1 = self.token_1
+        token_2 = self.token_2
+
+        game.check_tokens_exist(token_1, token_2)
+        game.check_has_ap(token_1, game.capture_cost)
+        game.check_range(token_1, token_2, distance=1)
+
+        # Check if token_2 belongs to a different player
+        owner_1 = game.get_owner(token_1)
+        owner_2 = game.get_owner(token_2)
+        if owner_1 == owner_2:
+            raise InvalidMoveError(f"Cannot capture your own token ({token_2})")
+
+        # Check if target token has 0 life
+        if game.get_life(token_2) > 0:
+            raise InvalidMoveError(f"Cannot capture {token_2} - it still has {game.get_life(token_2)} life")
+
+        # Execute capture
+        game.spend_ap(token_1, game.capture_cost)
+
+        # Remove token from old owner's player list
+        if token_2 in game.get_player_tokens(owner_2):
+            game.remove_token_from_player(owner_2, token_2)
+
+        # Add token to new owner's player list
+        game.get_player_tokens(owner_1).append(token_2)
+
+        # Update token ownership
+        game.set_owner(token_2, owner_1)
+
+        # Restore 1 life to the captured token (so it becomes usable)
+        game.set_life(token_2, 1)
+
+        # Update priority
+        game.update_priority(game.get_owner(token_1))
+
+        msg = (f"{token_1} captured {token_2} from {owner_2}! "
+               f"{token_2} now belongs to {owner_1} and has been restored to 1 ❤️")
+
+        # Check if the old owner is now eliminated (if they have no tokens left)
+        if game.is_player_eliminated(owner_2):
+            # If they're not already in jury, add them
+            if owner_2 not in game.jury:
+                # Find a representative token (could be the captured one or any other)
+                game.set_jury_vote(owner_2, token_2)
+                msg += f" → {owner_2} has no tokens left and joins the jury!"
+
+        return msg
+
+
+class VoteCommand(Command):
+    def __init__(self, game: 'Game', player: str, token: str | None = None):
+        super().__init__(game, player)
+        self.token = token
+
+    def execute(self) -> str:
+        """
+        vote [token]
+        You become part of the jury as soon as you vote for a live tank to support.
+        Vote for adding an extra AP to target token each turn.
+        None for no vote (cancels previous vote)
+        """
+        game = self.game
+        player = self.player
+        token = self.token
+
+        if not game.is_player_eliminated(player):
+            raise InvalidMoveError(f"Player {player} has not been eliminated yet")
+
+        if token is not None:
+            game.check_tokens_exist(token)
+            if not game.get_life(token):
+                raise InvalidMoveError(f"You may only vote for a live token (not {token})")
+            game.set_jury_vote(player, token)
+            msg = f"{player} is now voting for {token}"
+        else:
+            msg = f"{player} isn't voting for anyone"
+
+        # Update priority
+        game.update_priority(player)
+
+        return msg
+
+
+class HelpCommand(Command):
+    def execute(self) -> str:
+        """
+        help
+        Help message.
+        """
+        game = self.game
+
+        msg = "\nTank Tactics\n"
+        for command, method in game.COMMAND_REGISTRY.items():
+            msg += f'\n{command}'
+            msg += method.__doc__ if method.__doc__ else '\n'
+        msg += "\nUse the input file 'commands.txt' to create a game-state.\n"
+        return msg
+
+
+# ===== Super-Commands =====
+
+
+class AddPlayerCommand(Command):
+    def execute(self) -> str:
+        """
+        PLAYER [name]
+        Add a new player to dict of player: tokens
+        """
+        game = self.game
+        player = self.player
+
+        if player in game.get_players():
+            raise PlayerError(f"Player '{player}' already exists")
+
+        game.add_player(player)
+        game.set_random_seed()
+
+        return f"Added player '{player}'"
+
+
+class AddTokenCommand(Command):
+    def __init__(self, game: 'Game', token: str, owner: str, player: str | None = None):
+        super().__init__(game, player)
+        self.token = token
+        self.owner = owner
+
+    def execute(self) -> str:
+        """
+        TOKEN [token] [player]
+        Add a token to a player.
+        """
+        game = self.game
+        token = self.token
+        owner = self.owner
+
+        # Check valid for duplicate token names
+        assert type(token) is str
+        if not 1 <= len(token) <= 2:
+            raise TokenError(f"Token {token} must be one character long")
+        if token in game.get_tokens():
+            raise TokenError(f"Token '{token}' already exists")
+
+        # Check for owner
+        if owner not in game.get_players():
+            raise PlayerError(f'Player "{owner}" not found')
+
+        # Add token to player
+        game.add_token_to_player(owner, token)
+
+        # Initialize tokens
+        game.set_token(token, owner)
+
+        # Init position
+        if game.get_board_size() is not None:
+            game.set_random_token_position(token)
+
+        msg = f"Added {token} to {owner}"
+        position = game.get_position(token)
+        if position is not None:
+            msg += f" at {position}"
+        return msg
+
+
+class SetBoardSizeCommand(Command):
+    def __init__(self, game: 'Game', size: int | str = None, player: str | None = None):
+        super().__init__(game, player)
+        self.size = size
+
+    def execute(self) -> str:
+        """
+        BOARD_SIZE [size/"default"]
+        Change the board size. WARNING: This resets the game state!
+        """
+        game = self.game
+        size = self.size
+
+        if game.board_size_locked:
+            raise BoardSizeError(f'Board size locked at {game.board_size}')
+
+        default_size = game.get_default_board_size()
+        if size is None or type(size) is str:
+            size = default_size
+        area = size ** 2
+        if area <= len(game.tokens) or size < game.minimum_board_size:
+            raise BoardSizeError(f'Board too small! {size}')
+
+        # Set board size
+        game.board_size = size
+        game.board_size_locked = True
+
+        # Reset random seed & restart tokens
+        random.seed(game.random_seed)
+        game.init_tokens()
+
+        msg = f"Board size set to {size}x{size}"
+        if game.board_size == default_size:
+            msg += " (default)"
+        msg += " - tokens repositioned, RNG reset"
+        return msg
+
+
+class SetRandomSeedCommand(Command):
+    def __init__(self, game: 'Game', seed: int = None, player: str | None = None):
+        super().__init__(game, player)
+        self.seed = seed
+
+    def execute(self) -> str:
+        return self.game.set_random_seed(self.seed)
+
+
+class SetUpgradeCostCommand(Command):
+    def __init__(self, game: 'Game', cost: int, player: str | None = None):
+        super().__init__(game, player)
+        self.cost = cost
+
+    def execute(self) -> str:
+        """
+        UPGRADE_COST [cost]
+        Change the AP cost for upgrading a token.
+        """
+        game = self.game
+        cost = self.cost
+
+        if cost < 1:
+            raise RangeError("Upgrade cost must be at least 1")
+        game.upgrade_cost = cost
+        return f"Upgrade cost set to {cost} AP"
+
+
+class SetHealSelfCostCommand(Command):
+    def __init__(self, game: 'Game', cost: int, player: str | None = None):
+        super().__init__(game, player)
+        self.cost = cost
+
+    def execute(self) -> str:
+        """
+        HEAL_SELF_COST [cost]
+        Change the AP cost for healing own token.
+        """
+        game = self.game
+        cost = self.cost
+
+        if cost < 1:
+            raise RangeError("Heal cost must be at least 1")
+
+        game.heal_self_cost = cost
+        return f"Heal self cost set to {cost} AP"
+
+
+class SetGiftHeartCostCommand(Command):
+    def __init__(self, game: 'Game', cost: int, player: str | None = None):
+        super().__init__(game, player)
+        self.cost = cost
+
+    def execute(self) -> str:
+        """
+        GIFT_HEART_COST [cost]
+        Change the AP cost for gifting a heart.
+        """
+        game = self.game
+        cost = self.cost
+
+        if cost < 1:
+            raise RangeError("Gift heart cost must be at least 1")
+
+        game.gift_heart_cost = cost
+        return f"Gift heart cost set to {cost} AP"
+
+
+# ===== Game class =====
 
 
 class Game:
@@ -148,7 +742,7 @@ class Game:
         but without committing to one.
         """
         if self.board_size is None:
-            self.set_board_size_command(lock_board_size=False)
+            self.board_size = self.get_default_board_size()
 
     def repr(self, ascii_mode=False):
         self.force_board_size_set()
@@ -159,47 +753,16 @@ class Game:
     def __str__(self):
         return self.repr(ascii_mode=False)
 
-    # === Exceptions ===
+    # ===== Getters =====
 
-    def check_tokens_exist(self, *tokens):
-        """Raise exception if any of the tokens don't exist."""
-        self.force_board_size_set()
-        for token in tokens:
-            if token not in self.tokens:
-                raise TokenError(token)
+    def get_players(self) -> Dict[str, List[str]]:
+        return self.players
 
-    def check_has_ap(self, token, cost):
-        """Verify that token has enough AP to pay the cost."""
-        if self.get_ap(token) < cost:
-            raise APError(f"{token} AP: {self.get_ap(token)} < {cost}")
+    def get_tokens(self) -> Dict[str, Token]:
+        return self.tokens
 
-    def check_has_life(self, token, amount=1):
-        """Verify that token has enough AP to pay the cost."""
-        if self.get_life(token) < amount:
-            raise GameError(f"{token} life: {self.get_life(token)} < {amount}")
-
-    def check_range(self, token_1, token_2, distance=None):
-        """
-        Check if token_2 is within token_1's range.
-        If `distance` is provided, it overrides token_1's natural range.
-        """
-        d = self.distance(token_1, token_2)
-        r = distance if distance is not None else self.get_range(token_1)
-        if d > r:
-            raise RangeError(f"{token_2} is too far from {token_1} ({d} > {r})")
-
-    def check_life_cap(self, token, extra_hearts=1):
-        """
-        Verify that, after extra_hearts are applied, the token's harts:
-        - will stay within the bounds
-        - will not be reduced to 0 (or less)
-        """
-        if self.get_life(token) + extra_hearts > self.get_life_cap(token):
-            raise InvalidMoveError(f"{token} cannot receive any more hearts (did you mean 'gift_heart'?)")
-        elif self.get_life(token) + extra_hearts <= 0:
-            raise InvalidMoveError(f"{token} does not have enough hearts")
-
-    # === Getters ===
+    def get_board_size(self) -> int:
+        return self.board_size
 
     def get_token_info(self, token: str) -> Token:
         return self.tokens[token]
@@ -291,12 +854,9 @@ class Game:
                 player = self.priority[rev_j]
                 out += " " * offset + f"- {player}"
 
-                # Vote
-                if self.is_player_eliminated(player):
-                    if player in self.jury:
-                        out += f' -> {self.jury[player]}'
-                    else:
-                        out += f' -> no vote'
+                # Jury Vote
+                if player in self.jury:
+                    out += f' -> {self.jury[player]}'
 
             out += '\n'
 
@@ -306,21 +866,20 @@ class Game:
         out += '\n'
         return out
 
-    def get_player_life_repr(self, name_length=8, bar_length=15):
+    def get_player_life_repr(self, name_length=10):
         out = ''
         for player, tokens in self.iter_player_items():
             if not self.is_player_eliminated(player):
                 for i, token in enumerate(tokens):
                     if i == 0:
-                        out += f'\n{player:{name_length}}'
+                        out += f'\n {player:{name_length-1}}'
                     else:
                         out += " " * name_length
                     life_bar = self.get_lifebar(token)
                     ap = self.get_ap(token)
                     energy_bar = f"{"⚡️" * ap} "
                     bar = f' {token} {life_bar}{energy_bar}'
-                    out += f"{bar:{bar_length}}"
-                    out += '\n'
+                    out += f"{bar}\n"
         out += '\n'
         return out
 
@@ -342,7 +901,7 @@ class Game:
     def get_priority_repr(self):
         return '\nPriority: ' + ", ".join(self.priority) if self.tokens else ''
 
-    # === Setters ===
+    # ===== Setters =====
 
     def set_token(self, token, owner):
         self.tokens[token] = Token(
@@ -359,28 +918,6 @@ class Game:
 
     def set_life(self, token, amount: int):
         self.get_token_info(token).life = amount
-
-    def set_random_seed(self, seed: int = None):
-        """
-        RANDOM_SEED [seed]
-        Set the random seed for reproducibility.
-        Usage: set_random_seed(42)
-        """
-        if seed is None:
-            msg = "Random seed cannot be None"
-        elif seed == self.random_seed:
-            msg = f"Random seed was already {seed}"
-        else:
-            # Overwrite random seed
-            self.random_seed = seed
-            random.seed(seed)
-            msg = f"Random seed set to {seed}"
-
-        # Reset priority
-        self.priority = sorted(self.players)
-        random.shuffle(self.priority)
-
-        return msg
 
     def set_random_token_position(self, *tokens):
         positions = [(i, j) for i in range(self.board_size) for j in range(self.board_size)]
@@ -400,7 +937,69 @@ class Game:
 
         return msg
 
-    # === Helper methods ===
+    def set_jury_vote(self, player, token: str | None):
+        self.jury[player] = token
+
+    def set_random_seed(self, seed: int = None):
+        """
+        RANDOM_SEED [seed]
+        Set the random seed for reproducibility.
+        """
+        if seed is None:
+            msg = "Random seed cannot be None"
+        elif seed == self.random_seed:
+            msg = f"Random seed was already {seed}"
+        else:
+            # Overwrite random seed
+            self.random_seed = seed
+            random.seed(seed)
+            msg = f"Random seed set to {seed}"
+
+        # Reset priority
+        self.priority = sorted(self.players)
+        random.shuffle(self.priority)
+
+        return msg
+
+    # ===== Exceptions =====
+
+    def check_tokens_exist(self, *tokens):
+        """Raise exception if any of the tokens don't exist."""
+        self.force_board_size_set()
+        for token in tokens:
+            if token not in self.tokens:
+                raise TokenError(token)
+
+    def check_has_ap(self, token, cost):
+        """Verify that token has enough AP to pay the cost."""
+        if self.get_ap(token) < cost:
+            raise APError(f"{token} AP: {self.get_ap(token)} < {cost}")
+
+    def check_has_life(self, token, amount=1):
+        """Verify that token has enough AP to pay the cost."""
+        if self.get_life(token) < amount:
+            raise GameError(f"{token} life: {self.get_life(token)} < {amount}")
+
+    def check_life_cap(self, token, extra_hearts=1):
+        """
+        Verify that the token can receive the extra hearts.
+        """
+        if extra_hearts < 0:
+            raise ValueError("Extra hearts amount can't be negative.")
+        if self.get_life(token) + extra_hearts > self.get_life_cap(token):
+            raise InvalidMoveError(f"{token} cannot receive any more hearts (did you mean 'gift_heart'?)")
+
+    def check_range(self, token_1, token_2, distance=None):
+        """
+        Check if token_2 is within token_1's range.
+        If `distance` is provided, it overrides token_1's natural range.
+        """
+        d = self.distance(token_1, token_2)
+        r = distance if distance is not None else self.get_range(token_1)
+        if d > r:
+            raise RangeError(f"{token_2} is too far from {token_1} ({d} > {r})")
+
+    # ===== Helper methods =====
 
     def add_player(self, player: str):
         self.players[player] = []
@@ -413,8 +1012,17 @@ class Game:
 
     def increase_life(self, token, amount=1):
         """Increase or decrease token life."""
+        if amount < 0:
+            raise ValueError("Amount can't be negative.")
         self.check_life_cap(token, extra_hearts=amount)
         self.get_token_info(token).life += amount
+
+    def decrease_life(self, token, amount=1):
+        """Increase or decrease token life."""
+        if amount < 0:
+            raise ValueError("Amount can't be negative.")
+        self.check_has_life(token, amount=amount)
+        self.get_token_info(token).life -= amount
 
     def increase_life_cap(self, token, amount=1):
         self.get_token_info(token).life_cap += amount
@@ -439,20 +1047,20 @@ class Game:
         self.increase_ap(token_2, amount)
 
     def distance(self, token_1, token_2) -> float:
-        """Chebyshev distance (max(dx, dy)) - king-move style in chess"""
+        """Chebyshev distance (max(dx, dy)) - king-move style in chess."""
         self.check_tokens_exist(token_1, token_2)
         pos1 = self.get_token_info(token_1).position
         pos2 = self.get_token_info(token_2).position
         return chebyshev_distance(pos1, pos2)
 
     def is_in_range(self, token_1, token_2) -> bool:
-        """Check if token_2 is within token_1's current range"""
+        """Check if token_2 is within token_1's current range."""
         if token_1 not in self.tokens or token_2 not in self.tokens:
             return False
         return self.distance(token_1, token_2) <= self.get_range(token_1)
 
     def is_player_eliminated(self, player) -> bool:
-        """Returns True if player has no living tokens left"""
+        """Returns True if player has no living tokens left."""
         for token, info in self.iter_token_items():
             if info.owner == player and info.life > 0:
                 return False
@@ -467,488 +1075,79 @@ class Game:
         self.priority.pop(i)
         self.priority.append(player)
 
-    # === Commands ===
-
-    def give_ap_to_all_command(self) -> str:
-        """
-        Gives 1 AP to all live tokens.
-        Then, every token voted by the jury gets also +1 AP.
-        """
-        if not self.tokens:
-            raise TokenError("No tokens on board.")
-        self.force_board_size_set()
-
-        # update turn counter
-        self.turn_counter += 1
-
-        alive_count = 0
-        jury_bonus_count = 0
-
-        # 1) +1 AP to every living token
-        for token, info in self.iter_token_items():
-            if self.get_life(token) >= 1:
-                self.increase_ap(token, amount=1)
-                alive_count += 1
-
-        # 2) +1 extra AP to each jury representative token
-        for player, jury_token in self.iter_jury_items():
-            if jury_token in self.tokens:
-                if self.get_life(jury_token) >= 1:
-                    self.increase_ap(jury_token, amount=1)
-                    jury_bonus_count += 1
-
-        summary = f"[{self.turn_counter}] Gave +1 ⚡️ to {alive_count} living token"
-        if alive_count != 1:
-            summary += "s"
-
-        if jury_bonus_count > 0:
-            summary += f" + extra {jury_bonus_count} ⚡️ from jury"
-
-        return summary
-
-    def move_command(self, token: str, dx: int, dy: int):
-        """
-        move [dx] [dy]
-        Move the token by one square to the target position.
-        Cost: 1 AP
-        """
-        self.check_tokens_exist(token)
-        self.check_has_ap(token, 1)
-
-        # Calculate target position from current position + direction
-        info = self.get_token_info(token)
-        curr_x, curr_y = info.position
-        x = curr_x + dx
-        y = curr_y + dy
-        new_position = (x, y)
-
-        # Check if token is alive
-        # Tokens with 0 HP remain on the board but cannot take actions
-        if info.life <= 0:
-            raise InvalidMoveError("Error: Token has 0 HP and cannot move")
-
-        # Check board boundaries
-        if not (0 <= x < self.board_size and 0 <= y < self.board_size):
-            raise InvalidMoveError("Target position is out of bounds")
-
-        # Check distance (must be exactly 1 square away, Chebyshev distance)
-        # This allows horizontal, vertical, and diagonal moves
-        if chebyshev_distance(new_position, info.position) != 1:
-            raise RangeError("Target position must be adjacent (1 square away)")
-
-        # Check collision (target tile must be empty)
-        # get_tile returns the token name if occupied, or BLANK_TILE if empty
-        if self.get_tile(x, y) not in (BLANK_TILE, RANGE_TILE):
-            raise InvalidMoveError("Target position is occupied by another token")
-
-        # Execute Move
-        info.position = new_position
-        self.spend_ap(token, 1)
-
-        # Update priority
-        self.update_priority(self.get_owner(token))
-
-        return f"{token} moved to ({x}, {y}) (-1 ⚡️)"
-
-    def gift_command(self, token_1: str, token_2: str, n_points=1) -> str:
-        """
-        gift [token_1] [token_2]
-        Gift 1 AP from token_1 to token_2
-        Cost: 1 AP from token_1
-        """
-        self.check_tokens_exist(token_1, token_2)
-        self.check_has_ap(token_1, n_points)
-        self.check_range(token_1, token_2)
-
-        # Execute gift
-        self.spend_ap(token_1, n_points)
-        self.increase_ap(token_2, n_points)
-
-        # Update priority
-        self.update_priority(self.get_owner(token_1))
-
-        return f"{token_1} → {token_2} : gifted {n_points} ⚡️"
-
-    def shoot_command(self, token_1: str, token_2: str) -> str:
-        """
-        shoot [token_1] [token_2]
-        Shoot at token_2 → -1 life.
-        If you kill a token, you steal their AP.
-        Cost: 1 AP
-        """
-        self.check_tokens_exist(token_1, token_2)
-        self.check_has_ap(token_1, 1)
-        self.check_has_life(token_2)
-        self.check_range(token_1, token_2)
-
-        # Execute shoot
-        self.spend_ap(token_1, amount=+1)
-        self.increase_life(token_2, amount=-1)
-        target_owner = self.get_owner(token_2)
-
-        # Update priority
-        self.update_priority(self.get_owner(token_1))
-
-        # Check elimination to steal AP
-        life = self.get_life(token_2)
-        if life == 0:
-            stolen = self.get_ap(token_2)
-            self.transfer_ap(token_2, token_1, stolen)
-
-        # Report
-        msg = (f"{token_1} shot at {token_2}!  "
-               f"{target_owner}'s {token_2} now has {life} life {self.get_lifebar(token_2)}")
-        if self.is_player_eliminated(target_owner):
-            # No need to populate the jury
-            msg += f" → {target_owner} eliminated and sent to jury!"
-
-        return msg
-
-    def heal_self_command(self, token: str) -> str:
-        """
-        heal [token]
-        Heal own token +1 life (up to life_cap)
-        Cost: 2 AP
-        """
-        self.check_tokens_exist(token)
-        self.check_has_ap(token, self.heal_self_cost)
-        self.check_life_cap(token)
-
-        # Execute heal
-        self.spend_ap(token, self.heal_self_cost)
-        self.increase_life(token)
-
-        # Update priority
-        self.update_priority(self.get_owner(token))
-
-        return f"{token} healed +1 💚 {self.get_lifebar(token)}"
-
-    def upgrade_token_command(self, token: str) -> str:
-        """
-        upgrade [token]
-        Target token gets:
-        - range increased by +1
-        - life-cap increased by +1
-        - healed by +1 heart
-        Cost: 5 AP
-        """
-        self.check_tokens_exist(token)
-        self.check_has_ap(token, self.upgrade_cost)
-
-        # Execute upgrade
-        self.spend_ap(token, self.upgrade_cost)
-        self.increase_life_cap(token)
-        self.increase_life(token)
-        self.increase_range(token)
-
-        # Update priority
-        self.update_priority(self.get_owner(token))
-
-        # Report
-        new_cap = self.get_life_cap(token)
-        new_range = self.get_range(token)
-        msg = (f"{token} upgraded! "
-               f"New life cap: {new_cap} {self.get_lifebar(token)}, "
-               f"range: {new_range} {'🏹' * new_range}")
-
-        return msg
-
-    def gift_heart_command(self, token_1: str, token_2: str, n_hearst=1) -> str:
-        """
-        gift_hear [token_1] [token_2]
-        Gift 1 heart from token_1 to token_2.
-        token_1 can't remain without hears.
-        token_2 must be in range of token_1.
-        If token_2's owner was in jury → bring them back.
-        Cost: 1 AP
-        """
-        self.check_tokens_exist(token_1, token_2)
-        self.check_has_ap(token_1, self.gift_heart_cost)
-        self.check_range(token_1, token_2)
-        self.check_life_cap(token_1, extra_hearts=-n_hearst)
-        self.check_life_cap(token_2, extra_hearts=+n_hearst)
-
-        # Execute gift heart
-        self.spend_ap(token_1, self.gift_heart_cost)
-        self.increase_life(token_1, -n_hearst)
-        self.increase_life(token_2, +n_hearst)
-
-        # Check if we revive someone from jury
-        target_owner = self.get_owner(token_2)
-        msg = f"{token_1} → {token_2} : gifted 1 ❤️"
-        if target_owner in self.jury:
-            del self.jury[target_owner]
-            msg += f" → {target_owner} revived from jury!"
-
-        # Update priority
-        self.update_priority(self.get_owner(token_1))
-
-        # Check if donor died from this action
-        donor_owner = self.get_owner(token_1)
-        if self.get_life(token_1) == 0 and self.is_player_eliminated(donor_owner):
-            msg += f" → {donor_owner} sacrificed last heart"
-
-        return msg
-
-    def capture_command(self, token_1: str, token_2: str) -> str:
-        """
-        capture [token_1] [token_2]
-        Capture a KO enemy token and add it to your own pieces.
-        The captured token gets +1 heart.
-        Requires token_1 in contact with token_2 (distance=1).
-        Cost: 5 AP
-        """
-        self.check_tokens_exist(token_1, token_2)
-        self.check_has_ap(token_1, self.capture_cost)
-        self.check_range(token_1, token_2, distance=1)
-
-        # Check if token_2 belongs to a different player
-        owner_1 = self.get_owner(token_1)
-        owner_2 = self.get_owner(token_2)
-        if owner_1 == owner_2:
-            raise InvalidMoveError(f"Cannot capture your own token ({token_2})")
-
-        # Check if target token has 0 life
-        if self.get_life(token_2) > 0:
-            raise InvalidMoveError(f"Cannot capture {token_2} - it still has {self.get_life(token_2)} life")
-
-        # Execute capture
-        self.spend_ap(token_1, self.capture_cost)
-
-        # Remove token from old owner's player list
-        if token_2 in self.get_player_tokens(owner_2):
-            self.remove_token_from_player(owner_2, token_2)
-
-        # Add token to new owner's player list
-        self.get_player_tokens(owner_1).append(token_2)
-
-        # Update token ownership
-        self.set_owner(token_2, owner_1)
-
-        # Restore 1 life to the captured token (so it becomes usable)
-        self.set_life(token_2, 1)
-
-        # Update priority
-        self.update_priority(self.get_owner(token_1))
-
-        msg = (f"{token_1} captured {token_2} from {owner_2}! "
-               f"{token_2} now belongs to {owner_1} and has been restored to 1 ❤️")
-
-        # Check if the old owner is now eliminated (if they have no tokens left)
-        if self.is_player_eliminated(owner_2):
-            # If they're not already in jury, add them
-            if owner_2 not in self.jury:
-                # Find a representative token (could be the captured one or any other)
-                self.jury[owner_2] = token_2
-                msg += f" → {owner_2} has no tokens left and joins the jury!"
-
-        return msg
-
-    def jury_vote_command(self, player: str, token: str = None):
-        """
-        vote [token]
-        You become part of the jury as soon as you vote for a live tank to support.
-        Vote for adding an extra AP to target token each turn.
-        None for no vote (cancels previous vote)
-        """
-        if not self.is_player_eliminated(player):
-            raise InvalidMoveError(f"Player {player} has not been eliminated yet")
-
-        if token is not None:
-            self.check_tokens_exist(token)
-            if not self.get_life(token):
-                raise InvalidMoveError(f"You may only vote for a live token (not {token})")
-            self.jury[player] = token
-            msg = f"{player} is now voting for {token}"
-        else:
-            msg = f"{player} isn't voting for anyone"
-
-        # Update priority
-        self.update_priority(player)
-
-        return msg
-
-    def help_message_command(self):
-        """
-        help
-        Help message.
-        """
-        msg = "\nTank Tactics\n"
-        for command, method in self.COMMANDS.items():
-            msg += f'\n{command}'
-            msg += method.__doc__ if method.__doc__ else '\n'
-        msg += "\nUse the input file 'commands.txt' to create a game-state.\n"
-        return msg
-
-    # === Super-commands ===
-
-    def add_player_command(self, player_name: str):
-        """
-        PLAYER [name]
-        Add a new player to dict of player: tokens
-        """
-        if player_name in self.players:
-            raise PlayerError(f"Player '{player_name}' already exists")
-
-        self.add_player(player_name)
-        self.set_random_seed()
-
-        return f"Added player '{player_name}'"
-
-    def add_token_command(self, token: str, owner: str):
-        """
-        TOKEN [token] [player]
-        Add a token to a player.
-        """
-        # Check valid for duplicate token names
-        assert type(token) is str
-        if not 1 <= len(token) <= 2:
-            raise TokenError(f"Token {token} must be one character long")
-        if token in self.tokens:
-            raise TokenError(f"Token '{token}' already exists")
-
-        # Check for owner
-        if owner not in self.players:
-            raise PlayerError(f'Player "{owner}" not found')
-
-        # Add token to player
-        self.add_token_to_player(owner, token)
-
-        # Initialize tokens
-        self.set_token(token, owner)
-
-        # Init position
-        if self.board_size is not None:
-            self.set_random_token_position(token)
-
-        msg = f"Added {token} to {owner}"
-        position = self.get_position(token)
-        if position is not None:
-            msg += f" at {position}"
-        return msg
-
-    def set_board_size_command(self, size: int | str = None, lock_board_size=True):
-        """
-        BOARD_SIZE [size/"default"]
-        Change the board size. WARNING: This resets the game state!
-        """
-        if self.board_size_locked:
-            raise BoardSizeError(f'Board size locked at {self.board_size}')
-
-        default_size = self.get_default_board_size()
-        if size is None or type(size) is str:
-            size = default_size
-        if size ** 2 <= len(self.tokens) or size < self.minimum_board_size:
-            raise BoardSizeError(f'Board too small! {size}')
-
-        # Set board size
-        self.board_size = size
-        self.board_size_locked = lock_board_size
-
-        # Reset random seed & restart tokens
-        random.seed(self.random_seed)
-        self.init_tokens()
-
-        msg = f"Board size set to {size}x{size}"
-        if self.board_size == default_size:
-            msg += " (default)"
-        msg += " - tokens repositioned, RNG reset"
-        return msg
-
-    def set_upgrade_cost_command(self, cost: int):
-        """
-        UPGRADE_COST [cost]
-        Change the AP cost for upgrading a token.
-        Usage: set_upgrade_cost(3)
-        """
-        if cost < 1:
-            raise RangeError("Upgrade cost must be at least 1")
-        self.upgrade_cost = cost
-        return f"Upgrade cost set to {cost} AP"
-
-    def set_heal_self_cost_command(self, cost: int):
-        """
-        HEAL_SELF_COST [cost]
-        Change the AP cost for healing own token.
-        Usage: set_heal_self_cost(2)
-        """
-        if cost < 1:
-            raise RangeError("Heal cost must be at least 1")
-
-        self.heal_self_cost = cost
-        return f"Heal self cost set to {cost} AP"
-
-    def set_gift_heart_cost_command(self, cost: int):
-        """
-        GIFT_HEART_COST [cost]
-        Change the AP cost for gifting a heart.
-        Usage: set_gift_heart_cost(2)
-        """
-        if cost < 1:
-            raise RangeError("Gift heart cost must be at least 1")
-
-        self.gift_heart_cost = cost
-        return f"Gift heart cost set to {cost} AP"
-
-    # List of all commands
-    COMMANDS = {"next_turn": give_ap_to_all_command,
-                "move": move_command,
-                "gift": gift_command,
-                "shoot": shoot_command,
-                "heal": heal_self_command,
-                "gift_heart": gift_heart_command,
-                "upgrade": upgrade_token_command,
-                "capture": capture_command,
-                "vote": jury_vote_command,
-                "help": help_message_command,
-                "PLAYER": add_player_command,
-                "TOKEN": add_token_command,
-                "RANDOM_SEED": set_random_seed,
-                "BOARD_SIZE": set_board_size_command,
-                "UPGRADE_COST": set_upgrade_cost_command,
-                "HEAL_SELF_COST": set_heal_self_cost_command,
-                "GIFT_HEART_COST": set_gift_heart_cost_command,
-                }
-
-
-def execute_text_command(game: Game, line: str) -> str:
-    """Execute command line on game."""
-    line = line.strip()
-    if not line or line.startswith("#"):
-        return line
-
-    parts = line.split()
-    command = parts[0]
-    raw_args = parts[1:]
-
-    if command not in Game.COMMANDS:
-        raise GameError(f"Unknown command: {command}")
-
-    # Inspect method signature
-    command_method = Game.COMMANDS[command]
-    sig = inspect.signature(command_method)
-    params = list(sig.parameters.values())
-
-    # Remove 'self'
-    params = [p for p in params if p.name != "self"]
-
-    # Convert arguments automatically
+    def add_to_jury(self, player):
+        self.set_jury_vote(player, None)
+
+    def remove_from_jury(self, player):
+        del self.jury[player]
+
+    # ===== List of all commands =====
+    COMMAND_REGISTRY = {
+        "next_turn": NextTurnCommand,
+        "move": MoveCommand,
+        "gift": GiftCommand,
+        "shoot": ShootCommand,
+        "heal": HealCommand,
+        "gift_heart": GiftHeartCommand,
+        "upgrade": UpgradeCommand,
+        "capture": CaptureCommand,
+        "vote": VoteCommand,
+        "help": HelpCommand,
+        "PLAYER": AddPlayerCommand,
+        "TOKEN": AddTokenCommand,
+        "RANDOM_SEED": SetRandomSeedCommand,
+        "BOARD_SIZE": SetBoardSizeCommand,
+        "UPGRADE_COST": SetUpgradeCostCommand,
+        "HEAL_SELF_COST": SetHealSelfCostCommand,
+        "GIFT_HEART_COST": SetGiftHeartCostCommand,
+    }
+
+
+def convert_args(raw_args, params):
+    """Try to match the parameter's type."""
     converted_args = []
     for raw, param in zip(raw_args, params):
         if param.annotation in (int, float):
             converted_args.append(param.annotation(raw))
         else:
-            # default: keep as string (emoji tokens etc.)
             try:
                 converted_args.append(int(raw))
             except ValueError:
                 converted_args.append(raw)
+    return converted_args
 
-    # Call dynamically
-    args = [game] + converted_args
-    result = command_method(*args)
 
-    return result
+def execute_text_command(game: Game, line: str) -> str:
+    """Execute command line on game using Command Pattern."""
+    line = line.strip()
+    if not line or line.startswith("#"):
+        return line
+
+    parts = line.split()
+    command_key = parts[0]
+    raw_args = parts[1:]
+
+    if command_key not in Game.COMMAND_REGISTRY:
+        raise GameError(f"Unknown command: {command_key}")
+
+    # Get the Command Class
+    command_class = Game.COMMAND_REGISTRY[command_key]
+
+    # Prepare arguments for the Command Constructor
+    # We inspect the Command class __init__ to map args, similar to previous logic
+    # Note: 'game' is always passed first, 'player' is optional keyword or positional
+    sig = inspect.signature(command_class.__init__)
+    params = [p for p in sig.parameters.values() if p.name not in ('self', 'game')]
+    converted_args = convert_args(raw_args, params)
+
+    # Instantiate Command with game instance
+    # Note: We assume 'player' is handled via kwargs if needed, or passed as part of args
+    # For simplicity in this hook, we pass game + converted args.
+    # If 'player' context is needed, it should be injected here.
+    command_instance = command_class(game, *converted_args)
+
+    # Execute
+    return command_instance.execute()
 
 
 def run_commands_from_file(game: Game, filepath: str, ascii_mode=False) -> tuple[str, list]:
@@ -985,14 +1184,12 @@ def clear_screen():
 
 def display_game_state(input_file, output_file, ascii_mode=False):
     """Display console output and save game state."""
-    # Clear screen before updating display
-    msg = f"🔄 Auto-watch mode started (Press Ctrl+C to quit).\n"
-
     # Create fresh game instance
     game = Game()
     game_state, report = run_commands_from_file(game, input_file, ascii_mode=ascii_mode)
     messages = [s for s in report if s.strip() and not s.startswith('#')]
     last_report = messages[-1] if len(messages) else "(nothing to report)"
+    msg = f"🔄 Auto-watch mode started (Press Ctrl+C to quit).\n"
     msg += last_report + '\n'
     msg += game_state
 
