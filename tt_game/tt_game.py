@@ -8,7 +8,8 @@ import os
 import time
 import hashlib
 import inspect
-from typing import Dict
+from typing import Dict, List, Iterator
+from dataclasses import dataclass
 
 
 # === BOARD ===
@@ -60,6 +61,16 @@ def chebyshev_distance(pos1, pos2):
     return max(abs(x1 - x2), abs(y1 - y2))
 
 
+@dataclass
+class Token:
+    owner: str
+    position: tuple[int,int] | None
+    life: int
+    life_cap: int
+    range: int
+    ap: int
+
+
 class Game:
 
     def __init__(self,
@@ -85,8 +96,8 @@ class Game:
         self.gift_heart_cost = gift_heart_cost
         self.upgrade_cost = upgrade_cost
         self.capture_cost = capture_cost
-        self.players: Dict[str: tuple] = dict()  # dict of name: tokens with all the players
-        self.tokens: Dict[str: dict] = dict()  # dict of token: owner, position, life, AP
+        self.players: Dict[str: List[str]] = dict()  # dict of name: tokens with all the players
+        self.tokens: Dict[str: Token] = dict()  # dict of token: Token
         self.jury: Dict[str: str] = dict()  # dict of player: token
         self.board_size = None
         self.random_seed = None
@@ -97,19 +108,19 @@ class Game:
         self.set_random_seed(random_seed)
         self.init_tokens()
 
-    def iter_player_items(self):
+    def iter_player_items(self) -> Iterator[tuple[str, list]]:
         """Deterministically iterate over player.items()"""
         for player in sorted(self.players):
-            tokens = self.players[player]
+            tokens = self.get_player_tokens(player)
             yield player, tokens
 
-    def iter_token_items(self):
+    def iter_token_items(self) -> Iterator[tuple[str, Token]]:
         """Deterministically iterate over tokens.items()"""
         for token in sorted(self.tokens):
-            items = self.tokens[token]
+            items = self.get_token_info(token)
             yield token, items
 
-    def iter_jury_items(self):
+    def iter_jury_items(self) -> Iterator[tuple[str, tuple]]:
         """Deterministically iterate over jury.items()"""
         for player in sorted(self.jury):
             tokens = self.jury[player]
@@ -125,14 +136,7 @@ class Game:
 
         for player, tokens in self.iter_player_items():
             for token in sorted(tokens):
-                self.tokens[token] = {
-                    "owner": player,
-                    "position": None,
-                    "AP": 0,
-                    "life": self.life_cap,
-                    "life_cap": self.life_cap,
-                    "range": self.action_range,
-                }
+                self.set_token(token, player)
 
         # If board is ready then init positions too
         if self.board_size is not None:
@@ -150,8 +154,6 @@ class Game:
         self.force_board_size_set()
         out = self.get_board_tiles_repr(ascii_mode)
         out += self.get_player_life_repr()
-        # out += self.get_jury_repr()
-        # out += self.get_priority_repr()
         return out
 
     def __str__(self):
@@ -168,8 +170,13 @@ class Game:
 
     def check_has_ap(self, token, cost):
         """Verify that token has enough AP to pay the cost."""
-        if self.tokens[token]["AP"] < cost:
+        if self.get_ap(token) < cost:
             raise APError(f"{token} AP: {self.get_ap(token)} < {cost}")
+
+    def check_has_life(self, token, amount=1):
+        """Verify that token has enough AP to pay the cost."""
+        if self.get_life(token) < amount:
+            raise GameError(f"{token} life: {self.get_life(token)} < {amount}")
 
     def check_range(self, token_1, token_2, distance=None):
         """
@@ -177,39 +184,46 @@ class Game:
         If `distance` is provided, it overrides token_1's natural range.
         """
         d = self.distance(token_1, token_2)
-        r = distance if distance is not None else self.tokens[token_1]["range"]
+        r = distance if distance is not None else self.get_range(token_1)
         if d > r:
             raise RangeError(f"{token_2} is too far from {token_1} ({d} > {r})")
 
     def check_life_cap(self, token, extra_hearts=1):
         """
-        Verify that the token's harts will stay within the bounds
-        after extra_hearts are applied.
+        Verify that, after extra_hearts are applied, the token's harts:
+        - will stay within the bounds
+        - will not be reduced to 0 (or less)
         """
         if self.get_life(token) + extra_hearts > self.get_life_cap(token):
             raise InvalidMoveError(f"{token} cannot receive any more hearts (did you mean 'gift_heart'?)")
-        elif self.get_life(token) + extra_hearts < 0:
+        elif self.get_life(token) + extra_hearts <= 0:
             raise InvalidMoveError(f"{token} does not have enough hearts")
 
     # === Getters ===
 
+    def get_token_info(self, token: str) -> Token:
+        return self.tokens[token]
+
+    def get_player_tokens(self, player: str) -> List[str]:
+        return self.players[player]
+
     def get_life(self, token):
-        return self.tokens[token]['life']
+        return self.get_token_info(token).life
 
     def get_life_cap(self, token):
-        return self.tokens[token]["life_cap"]
+        return self.get_token_info(token).life_cap
 
     def get_ap(self, token):
-        return self.tokens[token]['AP']
+        return self.get_token_info(token).ap
 
     def get_position(self, token):
-        return self.tokens[token]['position']
+        return self.get_token_info(token).position
 
     def get_range(self, token):
-        return self.tokens[token]['range']
+        return self.get_token_info(token).range
 
     def get_owner(self, token):
-        return self.tokens[token]['owner']
+        return self.get_token_info(token).owner
 
     def get_default_board_size(self, k=0.4) -> int:
         """
@@ -232,25 +246,24 @@ class Game:
         pos = (x, y)
 
         # First check if there's a token at this position
-        for token, info in self.iter_token_items():
-            if info["position"] == pos:
+        for token, items in self.iter_token_items():
+            if items.position == pos:
                 return token
 
         # Color differently tiles close to live tokens
         for token, info in self.iter_token_items():
             if self.get_life(token) > 0:
                 # Check only tokens owned by the specified player that are alive
-                token_pos = info["position"]
+                token_pos = info.position
                 distance = chebyshev_distance((x, y), token_pos)
-                if 0 < distance <= info["range"]:
+                if 0 < distance <= info.range:
                     return RANGE_TILE
 
         return BLANK_TILE
 
     def get_lifebar(self, token: str):
-        info = self.tokens[token]
-        red = info["life"]
-        black = info["life_cap"] - info["life"]
+        red = self.get_token_info(token).life
+        black = self.get_token_info(token).life_cap - red
         return f'[{"❤️" * red}{"🖤" * black}]'
 
     def get_board_tiles_repr(self, ascii_mode=False, offset=6):
@@ -331,11 +344,21 @@ class Game:
 
     # === Setters ===
 
+    def set_token(self, token, owner):
+        self.tokens[token] = Token(
+            owner=owner,
+            position=None,
+            ap=0,
+            life=self.life_cap,
+            life_cap=self.life_cap,
+            range=self.action_range,
+        )
+
     def set_owner(self, token, player):
-        self.tokens[token]['owner'] = player
+        self.get_token_info(token).owner = player
 
     def set_life(self, token, amount: int):
-        self.tokens[token]["life"] = amount
+        self.get_token_info(token).life = amount
 
     def set_random_seed(self, seed: int = None):
         """
@@ -361,7 +384,7 @@ class Game:
 
     def set_random_token_position(self, *tokens):
         positions = [(i, j) for i in range(self.board_size) for j in range(self.board_size)]
-        existing_positions = {info["position"] for token, info in self.iter_token_items()}
+        existing_positions = {info.position for token, info in self.iter_token_items()}
         available_positions = [p for p in positions if p not in existing_positions]
 
         if not len(available_positions):
@@ -372,33 +395,43 @@ class Game:
         msg = 'New token positions: '
         for token in tokens:
             position = available_positions.pop()
-            self.tokens[token]['position'] = position
+            self.get_token_info(token).position = position
             msg += f" {token} -> {position} "
 
         return msg
 
     # === Helper methods ===
 
+    def add_player(self, player: str):
+        self.players[player] = []
+
+    def add_token_to_player(self, player, token):
+        self.players[player].append(token)
+
+    def remove_token_from_player(self, player, token):
+        self.players[player].remove(token)
+
     def increase_life(self, token, amount=1):
+        """Increase or decrease token life."""
         self.check_life_cap(token, extra_hearts=amount)
-        self.tokens[token]['life'] += amount
+        self.get_token_info(token).life += amount
 
     def increase_life_cap(self, token, amount=1):
-        self.tokens[token]['life_cap'] += amount
+        self.get_token_info(token).life_cap += amount
 
     def increase_range(self, token, amount=1):
-        self.tokens[token]['range'] += amount
+        self.get_token_info(token).range += amount
 
     def increase_ap(self, token, amount):
         if amount < 0:
             raise ValueError('amount must be positive')
-        self.tokens[token]['AP'] += amount
+        self.get_token_info(token).ap += amount
 
     def spend_ap(self, token, amount):
         if amount < 0:
             raise ValueError('amount must be positive')
         self.check_has_ap(token, cost=amount)
-        self.tokens[token]['AP'] -= amount
+        self.get_token_info(token).ap -= amount
 
     def transfer_ap(self, token_1, token_2, amount):
         """Transfer AP from token_1 to token_2"""
@@ -408,24 +441,28 @@ class Game:
     def distance(self, token_1, token_2) -> float:
         """Chebyshev distance (max(dx, dy)) - king-move style in chess"""
         self.check_tokens_exist(token_1, token_2)
-        pos1 = self.tokens[token_1]["position"]
-        pos2 = self.tokens[token_2]["position"]
+        pos1 = self.get_token_info(token_1).position
+        pos2 = self.get_token_info(token_2).position
         return chebyshev_distance(pos1, pos2)
 
     def is_in_range(self, token_1, token_2) -> bool:
         """Check if token_2 is within token_1's current range"""
         if token_1 not in self.tokens or token_2 not in self.tokens:
             return False
-        return self.distance(token_1, token_2) <= self.tokens[token_1]["range"]
+        return self.distance(token_1, token_2) <= self.get_range(token_1)
 
     def is_player_eliminated(self, player) -> bool:
         """Returns True if player has no living tokens left"""
         for token, info in self.iter_token_items():
-            if info["owner"] == player and info["life"] > 0:
+            if info.owner == player and info.life > 0:
                 return False
         return True
 
     def update_priority(self, player):
+        """
+        When a player performs an action, they fall
+        to the bottom of the priority list.
+        """
         i = self.priority.index(player)
         self.priority.pop(i)
         self.priority.append(player)
@@ -449,16 +486,15 @@ class Game:
 
         # 1) +1 AP to every living token
         for token, info in self.iter_token_items():
-            if info["life"] >= 1:
-                info["AP"] += 1
+            if self.get_life(token) >= 1:
+                self.increase_ap(token, amount=1)
                 alive_count += 1
 
         # 2) +1 extra AP to each jury representative token
         for player, jury_token in self.iter_jury_items():
             if jury_token in self.tokens:
-                token_info = self.tokens[jury_token]
-                if token_info["life"] >= 1:
-                    token_info["AP"] += 1
+                if self.get_life(jury_token) >= 1:
+                    self.increase_ap(jury_token, amount=1)
                     jury_bonus_count += 1
 
         summary = f"[{self.turn_counter}] Gave +1 ⚡️ to {alive_count} living token"
@@ -480,15 +516,15 @@ class Game:
         self.check_has_ap(token, 1)
 
         # Calculate target position from current position + direction
-        info = self.tokens[token]
-        curr_x, curr_y = info["position"]
+        info = self.get_token_info(token)
+        curr_x, curr_y = info.position
         x = curr_x + dx
         y = curr_y + dy
         new_position = (x, y)
 
         # Check if token is alive
         # Tokens with 0 HP remain on the board but cannot take actions
-        if info["life"] <= 0:
+        if info.life <= 0:
             raise InvalidMoveError("Error: Token has 0 HP and cannot move")
 
         # Check board boundaries
@@ -497,7 +533,7 @@ class Game:
 
         # Check distance (must be exactly 1 square away, Chebyshev distance)
         # This allows horizontal, vertical, and diagonal moves
-        if chebyshev_distance(new_position, info["position"]) != 1:
+        if chebyshev_distance(new_position, info.position) != 1:
             raise RangeError("Target position must be adjacent (1 square away)")
 
         # Check collision (target tile must be empty)
@@ -506,7 +542,7 @@ class Game:
             raise InvalidMoveError("Target position is occupied by another token")
 
         # Execute Move
-        info["position"] = new_position
+        info.position = new_position
         self.spend_ap(token, 1)
 
         # Update priority
@@ -542,12 +578,13 @@ class Game:
         """
         self.check_tokens_exist(token_1, token_2)
         self.check_has_ap(token_1, 1)
+        self.check_has_life(token_2)
         self.check_range(token_1, token_2)
 
         # Execute shoot
-        self.spend_ap(token_1, 1)
-        self.tokens[token_2]["life"] -= 1
-        target_owner = self.tokens[token_2]["owner"]
+        self.spend_ap(token_1, amount=+1)
+        self.increase_life(token_2, amount=-1)
+        target_owner = self.get_owner(token_2)
 
         # Update priority
         self.update_priority(self.get_owner(token_1))
@@ -579,7 +616,7 @@ class Game:
 
         # Execute heal
         self.spend_ap(token, self.heal_self_cost)
-        self.tokens[token]["life"] += 1
+        self.increase_life(token)
 
         # Update priority
         self.update_priority(self.get_owner(token))
@@ -608,18 +645,19 @@ class Game:
         self.update_priority(self.get_owner(token))
 
         # Report
-        new_cap = self.tokens[token]["life_cap"]
-        new_range = self.tokens[token]["range"]
+        new_cap = self.get_life_cap(token)
+        new_range = self.get_range(token)
         msg = (f"{token} upgraded! "
                f"New life cap: {new_cap} {self.get_lifebar(token)}, "
                f"range: {new_range} {'🏹' * new_range}")
 
         return msg
 
-    def gift_heart_command(self, token_1: str, token_2: str) -> str:
+    def gift_heart_command(self, token_1: str, token_2: str, n_hearst=1) -> str:
         """
         gift_hear [token_1] [token_2]
         Gift 1 heart from token_1 to token_2.
+        token_1 can't remain without hears.
         token_2 must be in range of token_1.
         If token_2's owner was in jury → bring them back.
         Cost: 1 AP
@@ -627,18 +665,17 @@ class Game:
         self.check_tokens_exist(token_1, token_2)
         self.check_has_ap(token_1, self.gift_heart_cost)
         self.check_range(token_1, token_2)
-        self.check_life_cap(token_1, extra_hearts=-1)
-        self.check_life_cap(token_2, extra_hearts=+1)
+        self.check_life_cap(token_1, extra_hearts=-n_hearst)
+        self.check_life_cap(token_2, extra_hearts=+n_hearst)
 
         # Execute gift heart
         self.spend_ap(token_1, self.gift_heart_cost)
-        self.increase_life(token_1, -1)
-        self.increase_life(token_2, +1)
-
-        target_owner = self.tokens[token_2]["owner"]
-        msg = f"{token_1} → {token_2} : gifted 1 ❤️"
+        self.increase_life(token_1, -n_hearst)
+        self.increase_life(token_2, +n_hearst)
 
         # Check if we revive someone from jury
+        target_owner = self.get_owner(token_2)
+        msg = f"{token_1} → {token_2} : gifted 1 ❤️"
         if target_owner in self.jury:
             del self.jury[target_owner]
             msg += f" → {target_owner} revived from jury!"
@@ -647,9 +684,9 @@ class Game:
         self.update_priority(self.get_owner(token_1))
 
         # Check if donor died from this action
-        donor_owner = self.tokens[token_1]["owner"]
-        if self.tokens[token_1]["life"] == 0 and self.is_player_eliminated(donor_owner):
-            msg += f" → {donor_owner} eliminated (sacrificed last heart)"
+        donor_owner = self.get_owner(token_1)
+        if self.get_life(token_1) == 0 and self.is_player_eliminated(donor_owner):
+            msg += f" → {donor_owner} sacrificed last heart"
 
         return msg
 
@@ -679,11 +716,11 @@ class Game:
         self.spend_ap(token_1, self.capture_cost)
 
         # Remove token from old owner's player list
-        if token_2 in self.players[owner_2]:
-            self.players[owner_2].remove(token_2)
+        if token_2 in self.get_player_tokens(owner_2):
+            self.remove_token_from_player(owner_2, token_2)
 
         # Add token to new owner's player list
-        self.players[owner_1].append(token_2)
+        self.get_player_tokens(owner_1).append(token_2)
 
         # Update token ownership
         self.set_owner(token_2, owner_1)
@@ -716,10 +753,11 @@ class Game:
         """
         if not self.is_player_eliminated(player):
             raise InvalidMoveError(f"Player {player} has not been eliminated yet")
-        self.check_tokens_exist(token)
-        if not self.tokens[token]["life"]:
-            raise InvalidMoveError(f"You may only vote for a live token (not {token})")
+
         if token is not None:
+            self.check_tokens_exist(token)
+            if not self.get_life(token):
+                raise InvalidMoveError(f"You may only vote for a live token (not {token})")
             self.jury[player] = token
             msg = f"{player} is now voting for {token}"
         else:
@@ -752,7 +790,7 @@ class Game:
         if player_name in self.players:
             raise PlayerError(f"Player '{player_name}' already exists")
 
-        self.players[player_name] = []
+        self.add_player(player_name)
         self.set_random_seed()
 
         return f"Added player '{player_name}'"
@@ -773,18 +811,11 @@ class Game:
         if owner not in self.players:
             raise PlayerError(f'Player "{owner}" not found')
 
-        # Add player
-        self.players[owner].append(token)
+        # Add token to player
+        self.add_token_to_player(owner, token)
 
         # Initialize tokens
-        self.tokens[token] = {
-            "owner": owner,
-            "position": None,
-            "AP": 0,
-            "life": self.life_cap,
-            "life_cap": self.life_cap,
-            "range": self.action_range,
-        }
+        self.set_token(token, owner)
 
         # Init position
         if self.board_size is not None:
