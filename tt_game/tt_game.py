@@ -11,6 +11,7 @@ import inspect
 from typing import Dict, List, Tuple, Iterator
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+from copy import deepcopy
 
 
 # === BOARD ===
@@ -45,14 +46,26 @@ class AsciiPalette(Palette):
 
 
 # === Default Params ===
-DEFAULT_MINIMUM_BOARD_SIZE = 5
-DEFAULT_RANDOM_SEED = 0
-DEFAULT_LIFE_CAP = 3
-DEFAULT_ACTION_RANGE = 2
-DEFAULT_GIFT_HEART_COST = 1
-DEFAULT_HEAL_SELF_COST = 2
-DEFAULT_UPGRADE_COST = 5
-DEFAULT_CAPTURE_COST = 5
+
+@dataclass
+class DefaultParams:
+    # Game and Board
+    RANDOM_SEED = 0
+    MINIMUM_BOARD_SIZE = 5
+    AP_PER_TURN = 1
+
+    # Token's initial stats
+    LIFE_CAP = 3
+    ACTION_RANGE = 2
+
+    # Costs
+    GIFT_COST = 0   # If 0 then no AP gets burned in the transaction
+    MOVE_COST = 1
+    SHOOT_COST = 1
+    GIFT_HEART_COST = 1     # +HEAL_SELF_COST if you consider that you lost a heart
+    HEAL_SELF_COST = 2
+    UPGRADE_COST = 5    # but you get one heart
+    CAPTURE_COST = 5    # but the captured token gets one heart
 
 
 FIRST_FILE_CONTENT = "# Players\nPLAYER Alice\nPLAYER Bob\nPLAYER Charlie\n\n"\
@@ -111,9 +124,9 @@ class NextTurnCommand(Command):
         Then, every token voted by the jury gets also +1 AP.
         """
         game = self.game
-        palette = self.game.palette
+        palette = game.palette
 
-        if not self.game.tokens:
+        if not game.tokens:
             raise TokenError("No tokens on board.")
         game.force_board_size_set()
 
@@ -126,7 +139,7 @@ class NextTurnCommand(Command):
         # 1) +1 AP to every living token
         for token, info in game.iter_token_items():
             if game.get_life(token) >= 1:
-                game.increase_ap(token, amount=1)
+                game.increase_ap(token, amount=game.parameters.AP_PER_TURN)
                 alive_count += 1
 
         # 2) +1 extra AP to each jury representative token
@@ -147,6 +160,7 @@ class NextTurnCommand(Command):
 
 
 class MoveCommand(Command):
+
     def __init__(self, game: 'Game', token: str, dx: int, dy: int, player: str | None = None):
         super().__init__(game, player)
         self.token = token
@@ -157,7 +171,6 @@ class MoveCommand(Command):
         """
         move [dx] [dy]
         Move the token by one square to the target position.
-        Cost: 1 AP
         """
         game = self.game
         token = self.token
@@ -165,9 +178,10 @@ class MoveCommand(Command):
         dy = self.dy
         board_size = game.get_board_size()
         palette = self.game.palette
+        cost = game.parameters.MOVE_COST
 
         game.check_tokens_exist(token)
-        game.check_has_ap(token, 1)
+        game.check_has_ap(token, cost)
 
         # Calculate target position from current position + direction
         info = game.get_token_info(token)
@@ -197,7 +211,7 @@ class MoveCommand(Command):
 
         # Execute Move
         info.position = new_position
-        game.spend_ap(token, 1)
+        game.spend_ap(token, cost)
 
         # Update priority
         game.update_priority(game.get_owner(token))
@@ -222,14 +236,15 @@ class GiftCommand(Command):
         token_1 = self.token_1
         token_2 = self.token_2
         n_points = self.n_points
-        palette = self.game.palette
+        palette = game.palette
+        cost = game.parameters.GIFT_COST
 
         game.check_tokens_exist(token_1, token_2)
-        game.check_has_ap(token_1, n_points)
+        game.check_has_ap(token_1, n_points + cost)
         game.check_range(token_1, token_2)
 
         # Execute gift
-        game.spend_ap(token_1, n_points)
+        game.spend_ap(token_1, n_points + cost)
         game.increase_ap(token_2, n_points)
 
         # Update priority
@@ -254,14 +269,15 @@ class ShootCommand(Command):
         game = self.game
         token_1 = self.token_1
         token_2 = self.token_2
+        cost = game.parameters.SHOOT_COST
 
         game.check_tokens_exist(token_1, token_2)
-        game.check_has_ap(token_1, 1)
+        game.check_has_ap(token_1, cost)
         game.check_has_life(token_2)
         game.check_range(token_1, token_2)
 
         # Execute shoot
-        game.spend_ap(token_1, amount=1)
+        game.spend_ap(token_1, cost)
         game.decrease_life(token_2, amount=1)
         target_owner = game.get_owner(token_2)
 
@@ -297,13 +313,14 @@ class HealCommand(Command):
         """
         game = self.game
         token = self.token
+        cost = game.parameters.HEAL_SELF_COST
 
         game.check_tokens_exist(token)
-        game.check_has_ap(token, game.heal_self_cost)
+        game.check_has_ap(token, cost)
         game.check_life_cap(token)
 
         # Execute heal
-        game.spend_ap(token, game.heal_self_cost)
+        game.spend_ap(token, cost)
         game.increase_life(token)
 
         # Update priority
@@ -328,12 +345,13 @@ class UpgradeCommand(Command):
         """
         game = self.game
         token = self.token
+        cost = game.parameters.UPGRADE_COST
 
         game.check_tokens_exist(token)
-        game.check_has_ap(token, game.upgrade_cost)
+        game.check_has_ap(token, cost)
 
         # Execute upgrade
-        game.spend_ap(token, game.upgrade_cost)
+        game.spend_ap(token, cost)
         game.increase_life_cap(token)
         game.increase_life(token)
         game.increase_range(token)
@@ -371,15 +389,16 @@ class GiftHeartCommand(Command):
         token_1 = self.token_1
         token_2 = self.token_2
         n_hearts = self.n_hearts
+        cost = game.parameters.GIFT_HEART_COST
 
         game.check_tokens_exist(token_1, token_2)
-        game.check_has_ap(token_1, game.gift_heart_cost)
+        game.check_has_ap(token_1, cost)
         game.check_range(token_1, token_2)
         game.check_has_life(token_1, amount=n_hearts+1)
         game.check_life_cap(token_2, extra_hearts=+n_hearts)
 
         # Execute gift heart
-        game.spend_ap(token_1, game.gift_heart_cost)
+        game.spend_ap(token_1, cost)
         game.decrease_life(token_1, n_hearts)
         game.increase_life(token_2, n_hearts)
 
@@ -418,9 +437,10 @@ class CaptureCommand(Command):
         game = self.game
         token_1 = self.token_1
         token_2 = self.token_2
+        cost = game.parameters.CAPTURE_COST
 
         game.check_tokens_exist(token_1, token_2)
-        game.check_has_ap(token_1, game.capture_cost)
+        game.check_has_ap(token_1, cost)
         game.check_range(token_1, token_2, distance=1)
 
         # Check if token_2 belongs to a different player
@@ -434,7 +454,7 @@ class CaptureCommand(Command):
             raise InvalidMoveError(f"Cannot capture {token_2} - it still has {game.get_life(token_2)} life")
 
         # Execute capture
-        game.spend_ap(token_1, game.capture_cost)
+        game.spend_ap(token_1, cost)
 
         # Remove token from old owner's player list
         if token_2 in game.get_player_tokens(owner_2):
@@ -602,7 +622,7 @@ class SetBoardSizeCommand(Command):
         if size is None or type(size) is str:
             size = default_size
         area = size ** 2
-        if area <= len(game.tokens) or size < game.minimum_board_size:
+        if area <= len(game.tokens) or size < game.parameters.MINIMUM_BOARD_SIZE:
             raise BoardSizeError(f'Board too small! {size}')
 
         # Set board size
@@ -634,43 +654,84 @@ class SetRandomSeedCommand(Command):
         return self.game.set_random_seed(self.seed)
 
 
-class SetUpgradeCostCommand(Command):
+class SetAPPerTurnCostCommand(Command):
+    def __init__(self, game: 'Game', amount: int):
+        super().__init__(game)
+        self.amount = amount
+
+    def execute(self) -> str:
+        """
+        AP_PER_TURN [amount]
+        Change the AP bonus at the beginning of the turn.
+        """
+        game = self.game
+        amount = self.amount
+
+        if amount <= 0:
+            raise RangeError("Amount must be positive!")
+
+        game.parameters.AP_PER_TURN = amount
+        return f"AP per turn bonus set to {amount} AP."
+
+
+class SetGiftCostCommand(Command):
     def __init__(self, game: 'Game', cost: int, player: str | None = None):
         super().__init__(game, player)
         self.cost = cost
 
     def execute(self) -> str:
         """
-        UPGRADE_COST [cost]
-        Change the AP cost for upgrading a token.
+        GIFT_COST [cost]
+        Change the AP cost for gifting AP.
         """
         game = self.game
         cost = self.cost
 
-        if cost < 1:
-            raise RangeError("Upgrade cost must be at least 1")
-        game.upgrade_cost = cost
-        return f"Upgrade cost set to {cost} AP"
+        if cost < 0:
+            raise RangeError("Gift cost cannot be negative")
+
+        game.parameters.GIFT_COST = cost
+        return f"Gift cost set to {cost} AP"
 
 
-class SetHealSelfCostCommand(Command):
+class SetMoveCostCommand(Command):
     def __init__(self, game: 'Game', cost: int, player: str | None = None):
         super().__init__(game, player)
         self.cost = cost
 
     def execute(self) -> str:
         """
-        HEAL_SELF_COST [cost]
-        Change the AP cost for healing own token.
+        MOVE_COST [cost]
+        Change the AP cost for moving tokens.
         """
         game = self.game
         cost = self.cost
 
-        if cost < 1:
-            raise RangeError("Heal cost must be at least 1")
+        if cost < 0:
+            raise RangeError("Move cost cannot be negative")
 
-        game.heal_self_cost = cost
-        return f"Heal self cost set to {cost} AP"
+        game.parameters.MOVE_COST = cost
+        return f"Move cost set to {cost} AP"
+
+
+class SetShootCostCommand(Command):
+    def __init__(self, game: 'Game', cost: int, player: str | None = None):
+        super().__init__(game, player)
+        self.cost = cost
+
+    def execute(self) -> str:
+        """
+        SHOOT_COST [cost]
+        Change the AP cost for shooting tokens.
+        """
+        game = self.game
+        cost = self.cost
+
+        if cost < 0:
+            raise RangeError("Shoot cost cannot be negative")
+
+        game.parameters.SHOOT_COST = cost
+        return f"Shoot cost set to {cost} AP"
 
 
 class SetGiftHeartCostCommand(Command):
@@ -688,9 +749,66 @@ class SetGiftHeartCostCommand(Command):
 
         if cost < 1:
             raise RangeError("Gift heart cost must be at least 1")
-
-        game.gift_heart_cost = cost
+        game.parameters.GIFT_HEART_COST = cost
         return f"Gift heart cost set to {cost} AP"
+
+
+class SetHealSelfCostCommand(Command):
+    def __init__(self, game: 'Game', cost: int, player: str | None = None):
+        super().__init__(game, player)
+        self.cost = cost
+
+    def execute(self) -> str:
+        """
+        HEAL_SELF_COST [cost]
+        Change the AP cost for healing own token.
+        """
+        game = self.game
+        cost = self.cost
+
+        if cost < 1:
+            raise RangeError("Heal cost must be at least 1")
+        game.parameters.HEAL_SELF_COST = cost
+        return f"Heal self cost set to {cost} AP"
+
+
+class SetCaptureCostCommand(Command):
+    def __init__(self, game: 'Game', cost: int, player: str | None = None):
+        super().__init__(game, player)
+        self.cost = cost
+
+    def execute(self) -> str:
+        """
+        CAPTURE_COST [cost]
+        Change the AP cost for capturing enemy tokens.
+        """
+        game = self.game
+        cost = self.cost
+
+        if cost < 0:
+            raise RangeError("Capture cost cannot be negative")
+
+        game.parameters.CAPTURE_COST = cost
+        return f"Capture cost set to {cost} AP"
+
+
+class SetUpgradeCostCommand(Command):
+    def __init__(self, game: 'Game', cost: int, player: str | None = None):
+        super().__init__(game, player)
+        self.cost = cost
+
+    def execute(self) -> str:
+        """
+        UPGRADE_COST [cost]
+        Change the AP cost for upgrading a token.
+        """
+        game = self.game
+        cost = self.cost
+
+        if cost < 1:
+            raise RangeError("Upgrade cost must be at least 1")
+        game.parameters.UPGRADE_COST = cost
+        return f"Upgrade cost set to {cost} AP"
 
 
 # ===== Game class =====
@@ -699,15 +817,8 @@ class SetGiftHeartCostCommand(Command):
 class Game:
 
     def __init__(self,
-                 palette=Palette(),
-                 random_seed=DEFAULT_RANDOM_SEED,
-                 life_cap=DEFAULT_LIFE_CAP,
-                 action_range=DEFAULT_ACTION_RANGE,
-                 minimum_board_size=DEFAULT_MINIMUM_BOARD_SIZE,
-                 heal_self_cost=DEFAULT_HEAL_SELF_COST,
-                 gift_heart_cost=DEFAULT_GIFT_HEART_COST,
-                 upgrade_cost=DEFAULT_UPGRADE_COST,
-                 capture_cost=DEFAULT_CAPTURE_COST):
+                 palette=None,
+                 parameters=None):
         """
         Actions cost AP (action points).
         Player may shoot each other, gift AP, heal, and upgrade their tokens.
@@ -716,13 +827,7 @@ class Game:
         each tank that has a vote from the jury receives one more AP.
         """
         self.palette = palette
-        self.life_cap = life_cap
-        self.action_range = action_range
-        self.minimum_board_size = minimum_board_size
-        self.heal_self_cost = heal_self_cost
-        self.gift_heart_cost = gift_heart_cost
-        self.upgrade_cost = upgrade_cost
-        self.capture_cost = capture_cost
+        self.parameters = parameters
         self.players: Dict[str: List[str]] = dict()  # dict of name: tokens with all the players
         self.tokens: Dict[str: Token] = dict()  # dict of token: Token
         self.jury: Dict[str: str] = dict()  # dict of player: token
@@ -732,8 +837,15 @@ class Game:
         self.turn_counter = None
         self.board_size_locked = False
 
-        self.set_random_seed(random_seed)
+        self.init_config()
+        self.set_random_seed(self.parameters.RANDOM_SEED)
         self.init_tokens()
+
+    def init_config(self):
+        palette = Palette() if self.palette is None else self.palette
+        parameters = DefaultParams() if self.parameters is None else self.parameters
+        self.palette = deepcopy(palette)
+        self.parameters = deepcopy(parameters)
 
     def init_tokens(self):
         """
@@ -817,12 +929,12 @@ class Game:
         Recommended board size.
         Keeps the density of tokens inversely proportional to the action radius.
         """
-        action_diameter = 2 * self.action_range + 1
+        action_diameter = 2 * self.parameters.ACTION_RANGE + 1
         token_area = action_diameter ** 2
         total_token_area = token_area * len(self.tokens)
         board_area = total_token_area * k
         board_size = int(board_area ** 0.5)
-        return max(board_size, self.minimum_board_size)
+        return max(board_size, self.parameters.MINIMUM_BOARD_SIZE)
 
     # ===== Setters =====
 
@@ -831,9 +943,9 @@ class Game:
             owner=owner,
             position=None,
             ap=0,
-            life=self.life_cap,
-            life_cap=self.life_cap,
-            range=self.action_range,
+            life=self.parameters.LIFE_CAP,
+            life_cap=self.parameters.LIFE_CAP,
+            range=self.parameters.ACTION_RANGE,
         )
 
     def set_owner(self, token, player):
@@ -962,7 +1074,7 @@ class Game:
                     ap = self.get_ap(token)
                     energy_bar = f"{self.palette.ENERGY * ap} "
                     bar = f' {token} {life_bar}{energy_bar}'
-                    out += f"{bar}\n"
+                    out += f"{bar} \n"
         out += '\n'
         return out
 
@@ -1146,9 +1258,14 @@ class Game:
         "token": AddTokenCommand,
         "random_seed": SetRandomSeedCommand,
         "board_size": SetBoardSizeCommand,
-        "upgrade_cost": SetUpgradeCostCommand,
-        "heal_self_cost": SetHealSelfCostCommand,
+        "gift_cost": SetGiftCostCommand,
+        "move_cost": SetMoveCostCommand,
+        "shoot_cost": SetShootCostCommand,
         "gift_heart_cost": SetGiftHeartCostCommand,
+        "heal_self_cost": SetHealSelfCostCommand,
+        "upgrade_cost": SetUpgradeCostCommand,
+        "capture_cost": SetCaptureCostCommand,
+        "ap_per_turn": SetAPPerTurnCostCommand,
     }
 
 
