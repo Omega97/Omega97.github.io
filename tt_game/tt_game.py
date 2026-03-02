@@ -8,22 +8,41 @@ import os
 import time
 import hashlib
 import inspect
-from typing import Dict, List, Iterator
-from dataclasses import dataclass
+from typing import Dict, List, Tuple, Iterator
 from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
 
 
 # === BOARD ===
-NUMBERS = ("0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣")
-BLANK_TILE = "➗"
-RANGE_TILE = "➕"
-CORNER_TILE = "⏹️"
+@dataclass
+class Palette:
+    """Default palette using emoji representations."""
+    NUMBERS: Tuple[str, ...] = (
+        "0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣",
+        "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"
+    )
+    BLANK_TILE: str = "➗"
+    RANGE_TILE: str = "➕"
+    CORNER_TILE: str = "⏹️"
+    ENERGY: str = "⚡️"
+    HEART: str = "❤️"
+    BLACK_HEART: str = "🖤"
 
-# === ASCII BOARD ===
-NUMBERS_ASCII = [" "] * 10
-BLANK_TILE_ASCII = "#"
-RANGE_TILE_ASCII = "+"
-CORNER_TILE_ASCII = " "
+
+@dataclass
+class AsciiPalette(Palette):
+    """ASCII-compatible palette for systems that don't support emojis."""
+    # Numbers: each instance gets its own copy, which avoids surprises in the future.
+    NUMBERS: Tuple[str, ...] = field(
+        default_factory=lambda: tuple(["  "] * 10)
+    )
+    BLANK_TILE: str = "# "
+    RANGE_TILE: str = "+ "
+    CORNER_TILE: str = " "
+    ENERGY: str = "⚡ "
+    HEART: str = "❤ "
+    BLACK_HEART: str = "X "
+
 
 # === Default Params ===
 DEFAULT_MINIMUM_BOARD_SIZE = 5
@@ -91,35 +110,38 @@ class NextTurnCommand(Command):
         Gives 1 AP to all live tokens.
         Then, every token voted by the jury gets also +1 AP.
         """
+        game = self.game
+        palette = self.game.palette
+
         if not self.game.tokens:
             raise TokenError("No tokens on board.")
-        self.game.force_board_size_set()
+        game.force_board_size_set()
 
         # update turn counter
-        self.game.turn_counter += 1
+        game.turn_counter += 1
 
         alive_count = 0
         jury_bonus_count = 0
 
         # 1) +1 AP to every living token
-        for token, info in self.game.iter_token_items():
-            if self.game.get_life(token) >= 1:
-                self.game.increase_ap(token, amount=1)
+        for token, info in game.iter_token_items():
+            if game.get_life(token) >= 1:
+                game.increase_ap(token, amount=1)
                 alive_count += 1
 
         # 2) +1 extra AP to each jury representative token
-        for player, jury_token in self.game.iter_jury_items():
-            if jury_token in self.game.tokens:
-                if self.game.get_life(jury_token) >= 1:
-                    self.game.increase_ap(jury_token, amount=1)
+        for player, jury_token in game.iter_jury_items():
+            if jury_token in game.tokens:
+                if game.get_life(jury_token) >= 1:
+                    game.increase_ap(jury_token, amount=1)
                     jury_bonus_count += 1
 
-        summary = f"[{self.game.turn_counter}] Gave +1 ⚡️ to {alive_count} living token"
+        summary = f"[{game.turn_counter}] Gave +1 {palette.ENERGY} to {alive_count} living token"
         if alive_count != 1:
             summary += "s"
 
         if jury_bonus_count > 0:
-            summary += f" + extra {jury_bonus_count} ⚡️ from jury"
+            summary += f" + extra {jury_bonus_count} {palette.ENERGY} from jury"
 
         return summary
 
@@ -142,6 +164,7 @@ class MoveCommand(Command):
         dx = self.dx
         dy = self.dy
         board_size = game.get_board_size()
+        palette = self.game.palette
 
         game.check_tokens_exist(token)
         game.check_has_ap(token, 1)
@@ -169,7 +192,7 @@ class MoveCommand(Command):
 
         # Check collision (target tile must be empty)
         # get_tile returns the token name if occupied, or BLANK_TILE if empty
-        if game.get_tile(x, y) not in (BLANK_TILE, RANGE_TILE):
+        if game.get_tile(x, y) not in (palette.BLANK_TILE, palette.RANGE_TILE):
             raise InvalidMoveError("Target position is occupied by another token")
 
         # Execute Move
@@ -179,7 +202,7 @@ class MoveCommand(Command):
         # Update priority
         game.update_priority(game.get_owner(token))
 
-        return f"{token} moved to ({x}, {y}) (-1 ⚡️)"
+        return f"{token} moved to ({x}, {y}) (-1 {palette.ENERGY})"
 
 
 class GiftCommand(Command):
@@ -199,6 +222,7 @@ class GiftCommand(Command):
         token_1 = self.token_1
         token_2 = self.token_2
         n_points = self.n_points
+        palette = self.game.palette
 
         game.check_tokens_exist(token_1, token_2)
         game.check_has_ap(token_1, n_points)
@@ -211,7 +235,7 @@ class GiftCommand(Command):
         # Update priority
         game.update_priority(game.get_owner(token_1))
 
-        return f"{token_1} → {token_2} : gifted {n_points} ⚡️"
+        return f"{token_1} → {token_2} : gifted {n_points} {palette.ENERGY}"
 
 
 class ShootCommand(Command):
@@ -361,7 +385,7 @@ class GiftHeartCommand(Command):
 
         # Check if we revive someone from jury
         target_owner = game.get_owner(token_2)
-        msg = f"{token_1} → {token_2} : gifted 1 ❤️"
+        msg = f"{token_1} → {token_2} : gifted 1 {game.palette.HEART}"
         if target_owner in game.jury:
             game.remove_from_jury(target_owner)
             msg += f" → {target_owner} revived from jury!"
@@ -429,7 +453,7 @@ class CaptureCommand(Command):
         game.update_priority(game.get_owner(token_1))
 
         msg = (f"{token_1} captured {token_2} from {owner_2}! "
-               f"{token_2} now belongs to {owner_1} and has been restored to 1 ❤️")
+               f"{token_2} now belongs to {owner_1} and has been restored to 1 {game.palette.HEART}")
 
         # Check if the old owner is now eliminated (if they have no tokens left)
         if game.is_player_eliminated(owner_2):
@@ -668,6 +692,7 @@ class SetGiftHeartCostCommand(Command):
 class Game:
 
     def __init__(self,
+                 palette=Palette(),
                  random_seed=DEFAULT_RANDOM_SEED,
                  life_cap=DEFAULT_LIFE_CAP,
                  action_range=DEFAULT_ACTION_RANGE,
@@ -683,6 +708,7 @@ class Game:
         A player with no live tokens is part of the jury. When all players receive AP,
         each tank that has a vote from the jury receives one more AP.
         """
+        self.palette = palette
         self.life_cap = life_cap
         self.action_range = action_range
         self.minimum_board_size = minimum_board_size
@@ -744,14 +770,14 @@ class Game:
         if self.board_size is None:
             self.board_size = self.get_default_board_size()
 
-    def repr(self, ascii_mode=False):
+    def repr(self):
         self.force_board_size_set()
-        out = self.get_board_tiles_repr(ascii_mode)
+        out = self.get_board_tiles_repr()
         out += self.get_player_life_repr()
         return out
 
     def __str__(self):
-        return self.repr(ascii_mode=False)
+        return self.repr()
 
     # ===== Getters =====
 
@@ -820,24 +846,21 @@ class Game:
                 token_pos = info.position
                 distance = chebyshev_distance((x, y), token_pos)
                 if 0 < distance <= info.range:
-                    return RANGE_TILE
+                    return self.palette.RANGE_TILE
 
-        return BLANK_TILE
+        return self.palette.BLANK_TILE
 
     def get_lifebar(self, token: str):
         red = self.get_token_info(token).life
         black = self.get_token_info(token).life_cap - red
-        return f'[{"❤️" * red}{"🖤" * black}]'
+        return f'[{self.palette.HEART * red}{self.palette.BLACK_HEART * black}]'
 
-    def get_board_tiles_repr(self, ascii_mode=False, offset=6):
+    def get_board_tiles_repr(self, offset=6):
         turn_bar = f'\nTurn {self.turn_counter}'
         out = f'{turn_bar:{self.board_size * 2 + 2 + offset}}'
         out += 'Priority & Votes'
         out += '\n'
-        if ascii_mode:
-            number_chars = [f" {c}" for c in NUMBERS_ASCII]
-        else:
-            number_chars = NUMBERS
+        number_chars = [f"{c}" for c in self.palette.NUMBERS]
         n_numbers = len(number_chars)
 
         for j in reversed(range(self.board_size)):
@@ -860,7 +883,7 @@ class Game:
 
             out += '\n'
 
-        out += CORNER_TILE_ASCII if ascii_mode else CORNER_TILE
+        out += self.palette.CORNER_TILE
         for i in range(self.board_size):
             out += number_chars[i % n_numbers]
         out += '\n'
@@ -877,7 +900,7 @@ class Game:
                         out += " " * name_length
                     life_bar = self.get_lifebar(token)
                     ap = self.get_ap(token)
-                    energy_bar = f"{"⚡️" * ap} "
+                    energy_bar = f"{self.palette.ENERGY * ap} "
                     bar = f' {token} {life_bar}{energy_bar}'
                     out += f"{bar}\n"
         out += '\n'
@@ -1150,17 +1173,17 @@ def execute_text_command(game: Game, line: str) -> str:
     return command_instance.execute()
 
 
-def run_commands_from_file(game: Game, filepath: str, ascii_mode=False) -> tuple[str, list]:
+def run_commands_from_file(game: Game, filepath: str) -> tuple[str, list]:
     """
     Run all the commands in the file.
     """
-    game_state = game.repr(ascii_mode=ascii_mode)
+    game_state = game.repr()
     report = []
     with open(filepath, "r", encoding="utf-8") as f:
         for i, line in enumerate(f, 1):
             try:
                 result = execute_text_command(game, line)
-                game_state = game.repr(ascii_mode=ascii_mode)
+                game_state = game.repr()
                 report.append(result)
             except Exception as e:
                 report.append(f"❌ Error: {e}")
@@ -1182,11 +1205,11 @@ def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 
-def display_game_state(input_file, output_file, ascii_mode=False):
+def display_game_state(input_file, output_file, palette):
     """Display console output and save game state."""
     # Create fresh game instance
-    game = Game()
-    game_state, report = run_commands_from_file(game, input_file, ascii_mode=ascii_mode)
+    game = Game(palette=palette)
+    game_state, report = run_commands_from_file(game, input_file)
     messages = [s for s in report if s.strip() and not s.startswith('#')]
     last_report = messages[-1] if len(messages) else "(nothing to report)"
     msg = f"🔄 Auto-watch mode started (Press Ctrl+C to quit).\n"
@@ -1217,7 +1240,13 @@ def create_input_file(input_file):
         return False
 
 
-def main(period=0.5, ascii_mode=True):
+def main(period=0.5, ascii_mode=False):
+
+    # Choose emoji palette
+    if not ascii_mode:
+        palette = Palette()
+    else:
+        palette = AsciiPalette()
 
     # Set default file paths
     input_file = "commands.txt"
@@ -1237,7 +1266,7 @@ def main(period=0.5, ascii_mode=True):
     prev_file_hash = get_file_hash(input_file)
 
     # --- INITIAL DISPLAY ---
-    display_game_state(input_file, output_file, ascii_mode=ascii_mode)
+    display_game_state(input_file, output_file, palette=palette)
 
     try:
         while True:
@@ -1253,7 +1282,7 @@ def main(period=0.5, ascii_mode=True):
 
             # Check if file hash changed
             if current_file_hash != prev_file_hash:
-                display_game_state(input_file, output_file, ascii_mode=ascii_mode)
+                display_game_state(input_file, output_file, palette=palette)
 
                 # Update previous file hash
                 prev_file_hash = current_file_hash
@@ -1264,4 +1293,4 @@ def main(period=0.5, ascii_mode=True):
 
 
 if __name__ == '__main__':
-    main()
+    main(ascii_mode=False)
