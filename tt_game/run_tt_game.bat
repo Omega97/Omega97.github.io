@@ -1,7 +1,15 @@
 @echo off
 cd /d "%~dp0"
 
-start "" "commands.txt"
+:: Check if the file exists before attempting to open it
+if exist "commands.txt" (
+    start "" "commands.txt"
+) else (
+    echo [Notice] commands.txt not found, skipping open.
+)
 
-python tt_game.py
+:: Run Python program
+:: python tt_game.py --ascii  ::Ascii characters
+python tt_game.py  :: Emoji
+
 pause
