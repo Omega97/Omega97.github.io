@@ -1,0 +1,57 @@
+
+# Fruit and Vegetables
+🍉 watermelon
+🍒 cherries
+🍎 apple
+🍓 strawberry
+🍄 mushroom
+
+🍊 orange
+🥕 carrot
+🍋 lemon
+🍌 banana
+
+# Nature and Vegetation
+🌞 sun
+⭐️ star
+🌴 palm
+🌳 tree
+🍀 clover
+
+# Food
+🍣 sushi
+🍿 popcorn
+🍕 pizza
+🍔 burger
+🧀 cheese
+🌮 taco
+🍪 cookie
+🎂 cake
+🍦 icecream
+
+# Animals
+🐴 horse
+🦀 crab
+🦋 butterfly
+🐙 octopus
+🐯 tiger
+😺 cat
+🦁 lion
+🐶 dog
+🐲 dragon
+🐸 frog
+🦖 dinosaur
+🐟 fish
+🐧 penguin
+🐰 bunny
+🦈 shark
+🐺 wolf
+🐭 mouse
+
+# Balls
+🔴 red
+🟠 orange
+🟡 yellow
+🟢 green
+🔵 blue
+🟣 purple
