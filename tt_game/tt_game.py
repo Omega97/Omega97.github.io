@@ -85,7 +85,7 @@ class InvalidMoveError(GameError): pass
 class BoardSizeError(GameError): pass
 
 
-def chebyshev_distance(pos1, pos2):
+def chebyshev_distance(pos1: tuple, pos2: tuple):
     """Chebyshev distance (max(dx, dy)) - king-move style in chess"""
     x1, y1 = pos1
     x2, y2 = pos2
@@ -290,12 +290,17 @@ class ShootCommand(Command):
             stolen = game.get_ap(token_2)
             game.transfer_ap(token_2, token_1, stolen)
 
+        # Check win-con
+        game.check_last_man_standing_win_con()
+
         # Report
         msg = (f"{token_1} shot at {token_2}!  "
                f"{target_owner}'s {token_2} now has {life} life {game.repr_lifebar(token_2)}")
         if game.is_player_eliminated(target_owner):
             game.add_to_jury(target_owner)
             msg += f" → {target_owner} eliminated and sent to jury!"
+            if game.is_game_over():
+                msg += f" → 🎉 {game.winner} won! 🎉"
 
         return msg
 
@@ -816,9 +821,7 @@ class SetUpgradeCostCommand(Command):
 
 class Game:
 
-    def __init__(self,
-                 palette=None,
-                 parameters=None):
+    def __init__(self, palette=None, parameters=None):
         """
         Actions cost AP (action points).
         Player may shoot each other, gift AP, heal, and upgrade their tokens.
@@ -836,6 +839,7 @@ class Game:
         self.priority = None  # Player names ranked from high to low priority
         self.turn_counter = None
         self.board_size_locked = False
+        self.winner = None
 
         self.init_config()
         self.set_random_seed(self.parameters.RANDOM_SEED)
@@ -892,7 +896,7 @@ class Game:
     # ===== Getters =====
 
     def is_player(self, name: str) -> bool:
-        return name in self.players
+        return name.lower() in self.players
 
     def get_tokens(self) -> Dict[str, Token]:
         return self.tokens
@@ -904,7 +908,7 @@ class Game:
         return self.tokens[token]
 
     def get_player_tokens(self, player: str) -> List[str]:
-        return self.players[player]
+        return self.players[player.lower()]
 
     def get_life(self, token):
         return self.get_token_info(token).life
@@ -1013,12 +1017,13 @@ class Game:
 
         # Color differently tiles close to live tokens
         for token, info in self.iter_token_items():
-            if self.get_life(token) > 0:
-                # Check only tokens owned by the specified player that are alive
-                token_pos = info.position
-                distance = chebyshev_distance((x, y), token_pos)
-                if 0 < distance <= info.range:
-                    return self.palette.RANGE_TILE
+            if info.position is None:
+                continue
+            if self.get_life(token) == 0:
+                continue
+            dist = chebyshev_distance((x, y), info.position)
+            if 0 < dist <= info.range:
+                return self.palette.RANGE_TILE
 
         return self.palette.BLANK_TILE
 
@@ -1146,13 +1151,13 @@ class Game:
     # ===== Helper methods =====
 
     def add_player(self, player: str):
-        self.players[player] = []
+        self.players[player.lower()] = []
 
     def add_token_to_player(self, player, token):
-        self.players[player].append(token)
+        self.get_player_tokens(player).append(token)
 
     def remove_token_from_player(self, player, token):
-        self.players[player].remove(token)
+        self.get_player_tokens(player).remove(token)
 
     def increase_life(self, token, amount=1):
         """Increase or decrease token life."""
@@ -1233,6 +1238,28 @@ class Game:
         if self.board_size is None:
             self.board_size = self.get_default_board_size()
 
+    # ===== Win Conditions =====
+
+    def check_last_man_standing_win_con(self):
+        """
+        You win if you are the only player with live tokens.
+        Set winner to None if nobody has won yet.
+        Otherwise, set it to the winning player.
+        """
+        # Collect all players who still have at least one living token
+        active_players = [
+            player for player in self.players
+            if not self.is_player_eliminated(player)
+        ]
+
+        # If exactly one player remains active, they are the winner
+        if len(active_players) == 1:
+            self.winner = active_players[0]
+
+    def is_game_over(self):
+        """The game ends when a winner is decided."""
+        return self.winner is not None
+
     # ===== Commands =====
 
     @staticmethod
@@ -1269,20 +1296,46 @@ class Game:
     }
 
 
+def read_emoji_file(path) -> dict:
+    """Read the file of emoji."""
+    emoji = dict()
+    with open(path, "r", encoding="utf-8") as file:
+        for line in file.readlines():
+            line = line.strip()
+            if line.startswith("#") or not line:
+                continue
+            c, name = line.split()
+            emoji[name] = c
+    return emoji
+
+
 class GameRunner:
-    def __init__(self, input_file="commands.txt", output_file="game_state.txt",
-                 palette=None, period=0.5):
+    def __init__(self,
+                 input_file="commands.txt",
+                 output_file="game_state.txt",
+                 emoji_file="emoji.txt",
+                 palette=None,
+                 period=0.5):
         self.input_file = input_file
         self.output_file = output_file
+        self.emoji_path = emoji_file
+        self.emoji = None
         self.palette = palette or Palette()
         self.period = period
         self.prev_file_hash = None
 
-        # Ensure input file exists on startup
+        self._load_emoji()
+
         if not os.path.exists(self.input_file):
             self._create_initial_input()
 
     # --- Utility Methods ---
+
+    def _load_emoji(self):
+        try:
+            self.emoji = read_emoji_file(self.emoji_path)
+        except FileExistsError:
+            pass
 
     def _get_file_hash(self):
         """Compute MD5 hash of the input file contents."""
@@ -1309,11 +1362,14 @@ class GameRunner:
 
     # --- Command Logic ---
 
-    @staticmethod
-    def convert_args(raw_args, params):
+    def convert_args(self, raw_args, params):
         """Try to match the parameter's type based on signature annotations."""
         converted_args = []
         for raw, param in zip(raw_args, params):
+            if self.emoji:
+                if raw in self.emoji:
+                    converted_args.append(self.emoji[raw])
+                    continue
             if param.annotation in (int, float):
                 converted_args.append(param.annotation(raw))
             else:
@@ -1354,6 +1410,11 @@ class GameRunner:
         report = []
         with open(self.input_file, "r", encoding="utf-8") as f:
             for line in f:
+                # Check if game is over
+                if game.is_game_over():
+                    break
+
+                # Try executing command, but stop at the first error.
                 try:
                     result = self.execute_text_command(game, line)
                     game_state = game.repr()
