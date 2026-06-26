@@ -1,0 +1,29 @@
+# move, shoot, heal, gift, gift_heart, upgrade, capture
+
+# Players
+PLAYER Cris
+PLAYER Nic
+PLAYER Omar
+PLAYER Peter
+PLAYER Vito
+
+# Tokens
+TOKEN 👑 Cris
+TOKEN 🍕 Cris
+TOKEN 🦊 Nic
+TOKEN 🦁 Nic
+TOKEN 🔵 Omar
+TOKEN 🐬 Omar
+TOKEN ☘️ Peter
+TOKEN 🐲 Peter
+TOKEN 🍎 Vito
+TOKEN 🔴 Vito
+
+# Parameters
+RANDOM_SEED 42
+BOARD_SIZE default
+
+# === Game ON! ===
+
+# Day 1
+next_turn

@@ -18,10 +18,8 @@ from copy import deepcopy
 @dataclass
 class Palette:
     """Default palette using emoji representations."""
-    NUMBERS: Tuple[str, ...] = (
-        "0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣",
-        "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"
-    )
+    # NUMBERS: Tuple[str, ...] = "0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"
+    NUMBERS: Tuple[str, ...] = tuple(["⏺️"] * 10)
     BLANK_TILE: str = "➗"
     RANGE_TILE: str = "➕"
     CORNER_TILE: str = "⏹️"
@@ -568,7 +566,7 @@ class AddTokenCommand(Command):
     def __init__(self, game: 'Game', token: str, owner: str, player: str | None = None):
         super().__init__(game, player)
         self.token = token
-        self.owner = owner
+        self.owner = owner.lower()
 
     def execute(self) -> str:
         """
