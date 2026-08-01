@@ -1,0 +1,335 @@
+%% Use the "normalphoto" option if you want a normal photo instead of cropped to a circle
+% \documentclass[10pt,a4paper,normalphoto]{altacv}
+
+\documentclass[10pt,a4paper,ragged2e,withhyper]{altacv}
+%% AltaCV uses the fontawesome5 and packages.
+%% See http://texdoc.net/pkg/fontawesome5 for full list of symbols.
+
+% Change the page layout if you need to
+\geometry{left=1.25cm,right=1.25cm,top=1.25cm,bottom=1.25cm,columnsep=1.25cm}
+
+% The paracol package lets you typeset columns of text in parallel
+\usepackage{paracol}
+
+% Change the font if you want to, depending on whether
+% you're using pdflatex or xelatex/lualatex
+% WHEN COMPILING WITH XELATEX PLEASE USE
+% xelatex -shell-escape -output-driver="xdvipdfmx -z 0" sample.tex
+\ifxetexorluatex
+  % If using xelatex or lualatex:
+  \setmainfont{Roboto Slab}
+  \setsansfont{Lato}
+  \renewcommand{\familydefault}{\sfdefault}
+\else
+  % If using pdflatex:
+  \usepackage[rm]{roboto}
+  \usepackage[defaultsans]{lato}
+  % \usepackage{sourcesanspro}
+  \renewcommand{\familydefault}{\sfdefault}
+\fi
+
+% Color palette 
+\definecolor{MainColor}{HTML}{780845}
+\definecolor{SecondColor}{HTML}{804070}
+\definecolor{SlateGrey}{HTML}{2E2E2E}
+\definecolor{LightGrey}{HTML}{666666}
+\definecolor{GoldenEarth}{HTML}{E7D192}
+\colorlet{name}{black}
+\colorlet{tagline}{SecondColor}
+\colorlet{heading}{MainColor}
+\colorlet{headingrule}{GoldenEarth}
+\colorlet{subheading}{SecondColor}
+\colorlet{accent}{SecondColor}
+\colorlet{emphasis}{SlateGrey}
+\colorlet{body}{LightGrey}
+
+% Change some fonts, if necessary
+\renewcommand{\namefont}{\Huge\rmfamily\bfseries}
+\renewcommand{\personalinfofont}{\footnotesize}
+\renewcommand{\cvsectionfont}{\LARGE\rmfamily\bfseries}
+\renewcommand{\cvsubsectionfont}{\large\bfseries}
+
+
+% Change the bullets for itemize and rating marker
+% for \cvskill if you want to
+\renewcommand{\cvItemMarker}{{\small\textbullet}}
+\renewcommand{\cvRatingMarker}{\faCircle}
+% ...and the markers for the date/location for \cvevent
+% \renewcommand{\cvDateMarker}{\faCalendar*[regular]}
+% \renewcommand{\cvLocationMarker}{\faMapMarker*}
+
+%% Use (and optionally edit if necessary) this .tex if you
+%% want to use an author-year reference style like APA(6)
+%% for your publication list
+% \input{pubs-authoryear.tex}
+
+%% Use (and optionally edit if necessary) this .tex if you
+%% want an originally numerical reference style like IEEE
+%% for your publication list
+\input{pubs-num.tex}
+
+%% sample.bib contains your publications
+\addbibresource{sample.bib}
+
+\begin{document}
+\name{Omar Cusma Fait}
+\tagline{Data Science and Artificial Intelligence Student at the University of Trieste}
+%% You can add multiple photos on the left or right
+
+% profile picture
+\photoR{2.7cm}{omar_profile_pic}
+
+% \photoL{2.5cm}{Yacht_High,Suitcase_High}
+
+\personalinfo{%
+  % Not all of these are required!
+  \email{omar.cusma.fait@gmail.com}
+  \phone{+39 334 1819464}
+  %\mailaddress{Åddrésş, Street, 00000 Cóuntry}
+  \location{Friuli Venezia Giulia, ITALY}
+  \homepage{https://omega97.github.io/}
+  %\twitter{@twitterhandle}
+  \linkedin{www.linkedin.com/in/omar-cusma-fait-27589a307}
+  \github{Omega97}
+  %\orcid{0000-0000-0000-0000}
+  
+  %% You can add your own arbitrary detail with
+  %% \printinfo{symbol}{detail}[optional hyperlink prefix]
+  % \printinfo{\faPaw}{Hey ho!}[https://example.com/]
+
+  %% Or you can declare your own field with
+  %% \NewInfoFiled{fieldname}{symbol}[optional hyperlink prefix] and use it:
+  % \NewInfoField{gitlab}{\faGitlab}[https://gitlab.com/]
+  % \gitlab{your_id}
+  %%
+  %% For services and platforms like Mastodon where there isn't a
+  %% straightforward relation between the user ID/nickname and the hyperlink,
+  %% you can use \printinfo directly e.g.
+  % \printinfo{\faMastodon}{@username@instace}[https://instance.url/@username]
+  %% But if you absolutely want to create new dedicated info fields for
+  %% such platforms, then use \NewInfoField* with a star:
+  % \NewInfoField*{mastodon}{\faMastodon}
+  %% then you can use \mastodon, with TWO arguments where the 2nd argument is
+  %% the full hyperlink.
+  % \mastodon{@username@instance}{https://instance.url/@username}
+}
+
+\makecvheader
+%% Depending on your tastes, you may want to make fonts of itemize environments slightly smaller
+% \AtBeginEnvironment{itemize}{\small}
+
+%% Set the left/right column width ratio to 6:4.
+\columnratio{0.6}
+
+% Start a 2-column paracol. Both the left and right columns will automatically
+% break across pages if things get too long.
+\begin{paracol}{2}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\cvsection{About me}
+
+I possess a strong background in \textbf{mathematics} and \textbf{physics}, which has refined my \textbf{analytical thinking} and \textbf{problem-solving} skills. These abilities have proven invaluable in approaching complex challenges from a logical perspective.
+
+%I have developed familiarity with complex problems in \textbf{mathematics} and \textbf{physics}, my \textbf{analytical thinking}, and \textbf{problem-solving} skills that have proven valuable in approaching challenges from a logical perspective.
+%My experience with chess taught me to stay \textbf{calm under pressure} and to seek a better solution to any given problem.
+%I tend to dedicate myself fully to projects that I am passionate about.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\cvsection{Work Experience}
+
+\cvevent{Math Teacher}{ISIS Gregor\v{c}i\v{c}}{March 2025 -- June 2025}{Gorizia}
+\begin{itemize}
+\item Taught mathematics at the high school level, preparing and delivering lessons, supporting students in building solid problem-solving foundations, and assessing progress across the school term.
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\cvsection{Things I am Proud Of}
+
+%\cvachievement{\faStar}{My Personal Projects}{I apply the knowledge I acquired during the courses to create something...}
+
+%\divider
+%\cvachievement{\faSearch}{Scienze Under 18}{Co-presenter of “Scienze under 18”, an in-person activity that aims to bring math to the attention of the public and young students (supervisor: Caterina Vicentini)}
+
+%\divider
+%\cvachievement{\faTrophy}{Chess}{20 Chess awards, where I ranked 1st to 3rd in official tournament}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\cvsection{Projects}
+
+% Astrophysics Internship
+\cvevent{Astrophysics Internship}{}{2023}{INAF} % 2023
+\begin{itemize}
+\item In a Study of the local correlation between two HEALPix images, I faced an open-ended problem for which I had to come up with my own solution to the problem.
+\end{itemize}
+
+\divider
+
+% Semantic Retrieval System with LLMs
+\cvevent{Semantic Retrieval System with LLMs}{}{}{} % {2024}{UniTS}
+\begin{itemize}
+\item I created a system that can search through a folder of documents to find the most relevant one, highlight the most relevant text in the document, or group the files in folders based on meaning. 
+\end{itemize}
+
+\divider
+
+% Royal Game of Ur Self-Reinforcement Learning AI
+\cvevent{Royal Game of Ur Self-Reinforcement Learning AI}{}{}{} %{2024}{UniTS}  
+\begin{itemize}
+\item I applied my knowledge in Reinforcement Learning by creating a bot that learns to play well at the game through self-play only.
+\end{itemize}
+
+\divider
+
+% Wikipedia Recommendation System
+\cvevent{Wikipedia Recommendation System}{}{}{} %{2024}{UniTS}
+\begin{itemize}
+%\items todo better
+\item With my team, we created an online platform that recommends Wikipedia pages based on your preferences. I later improved the system by leveraging a lightweight sentence embedding model.
+\end{itemize}
+
+\divider
+
+% Quantum Ground State Simulation
+\cvevent{Quantum Ground State Simulation}{}{}{} %{2022}{UniTS} 
+\begin{itemize}
+\item I applied my knowledge in physics to write a program to find the ground state of a quantum system of interacting particles.
+%\item Given the potential, the program will find the system's ground state using the variational method. 
+%\item The program distinguishes between bosons and fermions and can also handle potentials with a singularity at the origin.
+\end{itemize}
+
+\divider
+
+% Peak Detection
+\cvevent{Peak Detection in Noisy Signal}{}{}{} % {2023}{}
+\begin{itemize}
+\item I helped a friend in automating the detection and localization of peaks in noisy spectroscopic data.
+\end{itemize}
+
+\divider
+
+% Telegram Bot
+\cvevent{Telegram Bot}{}{}{} % 2024
+\begin{itemize}
+\item I created a general-purpose bot that manages and interacts with Telegram users in real time.
+\end{itemize}
+
+
+%\divider
+
+% Wave simulation
+%\cvevent{Wave simulation}{UniTS}{}{} % 2022
+%\begin{itemize}
+%\item The library implements a simple simulation of a 2D wave using the Runge-Kutta method that can be exported to a GIF.
+%\item The library allows to specify the boundary conditions, initial conditions, and obstacles. 
+%\end{itemize}
+%\divider
+
+% Google Hash 2019
+%\cvevent{Google Hash 2019}{}{}{} % 2019
+%\begin{itemize}
+%\item I had the opportunity to show my programming and teamwork skills in an intense competition
+%\end{itemize}
+%\divider
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\cvsection{Interests}
+
+\cvtag{Python} 
+\cvtag{Mathematics} 
+\cvtag{Physics} 
+\cvtag{Science}\\
+\cvtag{Simulations} 
+\cvtag{Reinfocement Learning} 
+\cvtag{AI} \\
+\cvtag{Machine Learning} 
+\cvtag{Big Data}
+\cvtag{Deep Learning} 
+ 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\switchcolumn
+
+\cvsection{Digital Skills}
+
+\cvskill{Python}{4.5}
+\divider
+
+\cvtag{Pandas}
+\cvtag{NumPy}
+\cvtag{MatPlotLib}
+\cvtag{GitHub}\\
+\cvtag{PyCharm}
+\cvtag{Latex}
+\cvtag{Krita}
+\cvtag{Windows}\\
+\cvtag{Excel}
+\cvtag{Word}
+\cvtag{Pascal}
+\cvtag{PowerPoint}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\cvsection{Languages}
+
+\cvskill{Italian (native)}{5}
+\divider
+
+\cvskill{Slovenian (native)}{4.5}
+\divider
+
+\cvskill{English (B2)}{4.5} %% Supports X.5 values.
+\divider
+
+Learning: \cvtag{Japanese}
+
+\medskip
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\cvsection{Education}
+
+\cvevent{Currently pursuing: Master's Degree\ in Data Science and Artificial Intelligence}{Università degli Studi di Trieste}{}{}
+
+\divider
+\cvevent{Bachelor's Degree\ in Physics}{Università degli Studi di Trieste}{}{}
+Thesis title: A Comparative Analysis of Neural Network Methonds for Source Detection
+
+\divider
+\cvevent{High School Diploma\ Applied Sciences}{Istituto di Istruzione Superiore Gabriele D'Annunzio}{}{}
+
+%\divider
+%\cvevent{M.Sc.\ in Your Discipline}{Your University}{Sept 2001 -- June 2002}{}
+
+%\divider
+%\cvevent{B.Sc.\ in Your Discipline}{Stanford University}{Sept 1998 -- June 2001}{}
+
+% \divider
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\cvsection{Referees}
+
+% \cvref{name}{email}{mailing address}
+\cvref{Dr.\ Elena Orlando}{INAF}{orland.ele@gmail.com}
+
+\divider
+
+\cvref{Peter \v{C}ernic}{Principal, ISIS Gregor\v{c}i\v{c} -- Gorizia}{Available upon request}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{paracol}
+
+\end{document}
