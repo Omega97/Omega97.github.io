@@ -165,8 +165,10 @@
         }
         .nav-menu {
             display: flex;
-            gap: 2rem;
+            flex-wrap: wrap;
+            gap: 1.1rem;
             list-style: none;
+            justify-content: flex-end;
         }
         .nav-menu a {
             color: #ECEFF4;
@@ -439,7 +441,7 @@
     <header class="hero">
         <div class="hero-content">
             <h1 class="animate-name">Omar Cusma Fait</h1>
-            <p class="animate-tagline">Physics BSc | Data Science & AI @ UniTS | Intern @ ICTP (TinyML)</p>
+            <p class="animate-tagline">Physics BSc | Data Science &amp; AI MSc @ UniTS | Intern @ ICTP (TinyML)</p>
             <div class="hero-cta">
                 <a href="#projects" class="btn-primary">View Projects</a>
             </div>
@@ -456,9 +458,11 @@
             <a href="#" class="nav-logo">OCF</a>
             <ul class="nav-menu">
                 <li><a href="#about">About Me</a></li>
-                <li><a href="#current-internship">Current Internship</a></li>
                 <li><a href="#education">Education</a></li>
-                <li><a href="#thesis">Bachelor's Thesis & Internship</a></li>
+                <li><a href="#work-experience">Work</a></li>
+                <li><a href="#digital-skills">Digital Skills</a></li>
+                <li><a href="#languages">Languages</a></li>
+                <li><a href="#thesis">Theses</a></li>
                 <li><a href="#projects">Projects</a></li>
             </ul>
         </div>
@@ -511,34 +515,11 @@
                 My experience with chess taught me to stay calm under pressure and to look
                 for a better solution for any
                 given problem. <br>
+                I completed a master’s degree in Data Science and Artificial Intelligence
+                at the University of Trieste. <br>
                 I am passionate about reinforcement learning, physics, AI, programming,
                 and quantum computing.
             </p>
-        </section>
-        <hr>
-
-
-        <!-- Current Internship -->
-        <a class="section-anchor" id="current-internship"></a>
-        <section>
-            <h2 class="section-title">Current Internship</h2>
-            <div class="project">
-                <div class="project-content">
-                    <img src="images/ictp_tinyml.png" alt="ICTP TinyML internship" class="project-image">
-                    <div class="project-text">
-                        <h3>ICTP Internship — TinyML & Embedded Chess AI (2026)</h3>
-                        <p>
-                            <strong><a href="https://www.ictp.it/">ICTP</a></strong> — Miramare, Trieste
-                        </p>
-                        <p>
-                            Currently interning at the International Centre for Theoretical Physics (ICTP) in Miramare.
-                            My work focuses on <b>TinyML</b>, building <b>chess AI for microcontrollers</b>, and applying
-                            <b>neural network pruning and quantization</b> to run models efficiently on edge devices.
-                            <br><a href="https://github.com/Omega97/TinyML_Internship">GitHub repository</a>
-                        </p>
-                    </div>
-                </div>
-            </div>
         </section>
         <hr>
 
@@ -548,43 +529,17 @@
         <section>
             <h2 class="section-title">Education and Training</h2>
             <p>
-                [2026] Internship at the <a href="https://www.ictp.it/">ICTP</a> (Miramare) — TinyML, chess AI on microcontrollers, AI pruning and quantization <br/>
+                [2026] Master’s degree in Data Science and Artificial Intelligence at the
+                <a href="https://dsai.units.it/">Università degli Studi di Trieste (DSAI)</a>.
+                Thesis: <em>Unsupervised State Bucketing for Mixture of Experts in Resource-Constrained Chess Engines</em>
+                (supervisor: <a href="https://www.areasciencepark.it/en/about-us/alessio-ansuini/">Alessio Ansuini</a>) <br/>
+                [2026] Internship at the <a href="https://www.ictp.it/">ICTP</a> (Miramare) — TinyML, chess AI on microcontrollers, AI pruning and quantization
+                (supervisor: <a href="https://www.ictp.it/member/marco-zennaro">Marco Zennaro</a>) <br/>
                 [2023] Bachelor’s degree in physics at the
                 <a href="https://df.units.it/">Università degli studi di Trieste</a> <br/>
                 [2023] Internship in astrophysical data analysis at the INAF (supervisor: Elena Orlando) <br/>
                 [2015] High School diploma at the "Istituto di Istruzione Superiore Gabriele D'Annunzio" <br/>
             </p>
-        </section>
-        <hr>
-
-
-        <!-- Languages -->
-        <section>
-            <h2 class="section-title">Language Skills</h2>
-            <ul>
-                <li>🇮🇹 <b>Italian</b> (Mother tongue)</li>
-                <li>🇸🇮 <b>Slovenian</b> (Mother tongue)</li>
-                <li>🇬🇧 <b>English</b> (Proficient, B2)</li>
-                <li>🇯🇵 <b>Japanese</b> (Elementary)</li>
-            </ul>
-        </section>
-        <hr>
-
-
-        <!-- Digital Skills -->
-        <section>
-            <h2 class="section-title">Digital Skills</h2>
-            <ul>
-                <li><b>Python</b> (in-depth: Bachelor’s + personal projects)</li>
-                <li>Python libraries: <b>NumPy, Matplotlib, PyTorch, Scikit-Learn, Pandas</b></li>
-                <li>Grok Build - optimized workflow environment for maximum sinergy with AI</li>
-                <li>Obsidian, Overleaf</li>
-                <li>R (Data Science and AI Master's)</li>
-                <li>Fortran (Physics Bachelor's)</li>
-                <li>Pascal (Secondary school)</li>
-                <li>Krita (self-taught image editing)</li>
-                <li>Windows, Excel, Word, PowerPoint, Ubuntu</li>
-            </ul>
         </section>
         <hr>
 
@@ -606,10 +561,87 @@
         <hr>
 
 
+        <!-- Digital Skills -->
+        <a class="section-anchor" id="digital-skills"></a>
+        <section>
+            <h2 class="section-title">Digital Skills</h2>
+            <ul>
+                <li><b>Python</b> (in-depth: Bachelor’s + personal projects)</li>
+                <li>Python libraries: <b>NumPy, Matplotlib, PyTorch, Scikit-Learn, Pandas</b></li>
+                <li>Grok Build - optimized workflow environment for maximum sinergy with AI</li>
+                <li>Obsidian, Overleaf</li>
+                <li>R (Data Science and AI Master's)</li>
+                <li>Fortran (Physics Bachelor's)</li>
+                <li>Pascal (Secondary school)</li>
+                <li>Krita (self-taught image editing)</li>
+                <li>Windows, Excel, Word, PowerPoint, Ubuntu</li>
+            </ul>
+        </section>
+        <hr>
+
+
+        <!-- Languages -->
+        <a class="section-anchor" id="languages"></a>
+        <section>
+            <h2 class="section-title">Language Skills</h2>
+            <ul>
+                <li>🇮🇹 <b>Italian</b> (Mother tongue)</li>
+                <li>🇸🇮 <b>Slovenian</b> (Mother tongue)</li>
+                <li>🇬🇧 <b>English</b> (Proficient, B2)</li>
+                <li>🇯🇵 <b>Japanese</b> (Elementary)</li>
+            </ul>
+        </section>
+        <hr>
+
+
         <!-- THESIS & INTERNSHIP -->
         <a class="section-anchor" id="thesis"></a>
         <section class="content-section">
-            <h2 class="section-title">Bachelor's Thesis & Internship</h2>
+            <h2 class="section-title">Theses and Internships</h2>
+
+            <div class="project">
+                <div class="project-content">
+                    <img src="images/chess_black.png" alt="Chessboard for the master's thesis" class="project-image">
+                    <div class="project-text">
+                        <h3>Unsupervised State Bucketing for Mixture of Experts in Resource-Constrained Chess Engines (2026)</h3>
+                        <p>
+                            <strong>Master’s Thesis</strong> — <a href="https://dsai.units.it/">Università degli Studi di Trieste, DSAI</a><br>
+                            <em>Supervisor: <a href="https://www.areasciencepark.it/en/about-us/alessio-ansuini/">Alessio Ansuini</a>.</em>
+                        </p>
+                        <h4 style="margin:1rem 0 .5rem;color:var(--accent);">The thesis</h4>
+                        <p style="font-size:.95rem;line-height:1.7;">
+                            The thesis studies <b>unsupervised state bucketing</b> for
+                            <b>mixture-of-experts</b> models in <b>resource-constrained chess engines</b>.
+                            It is paired with the ICTP internship supervised by Marco Zennaro, where the same
+                            line of work produced a data-driven Mixture-of-Experts architecture for NNUE engines,
+                            with gradient-informed sample clustering and a lightweight inference dispatcher.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <a class="section-anchor" id="current-internship"></a>
+            <div class="project">
+                <div class="project-content">
+                    <img src="images/ictp_tinyml.png" alt="ICTP TinyML internship" class="project-image">
+                    <div class="project-text">
+                        <h3>Master's Internship — TinyML &amp; Embedded Chess AI (2026)</h3>
+                        <p>
+                            <strong><a href="https://www.ictp.it/">ICTP</a></strong> — Miramare, Trieste<br>
+                            <em>Supervisor: <a href="https://www.ictp.it/member/marco-zennaro">Marco Zennaro (ICTP)</a>.</em>
+                        </p>
+                        <p>
+                            Internship at the International Centre for Theoretical Physics (ICTP) in Miramare,
+                            supervised by Marco Zennaro.
+                            The work focuses on <b>TinyML</b>, building <b>chess AI for microcontrollers</b>, and applying
+                            <b>neural network pruning and quantization</b> so models can run on edge devices.
+                            I developed a data-driven <b>Mixture-of-Experts</b> architecture for resource-constrained
+                            NNUE chess engines, using gradient-informed sample clustering and a lightweight inference dispatcher.
+                            <br><a href="https://github.com/Omega97/TinyML_Internship">GitHub repository</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
 
             <div class="project">
                 <div class="project-content">
@@ -652,17 +684,16 @@
                     </div>
                 </div>
             </div>
-        </section>
-        <hr>
 
-        <!-- Bachelor's Intership -->
-        <div class="project">
-            <div class="project-content">
-                <img src="images/skymap_correlation.png" alt="Sky-map Correlation" class="project-image">
-                <div class="project-text">
-                    <h3>Internship in Astrophysical Data Analysis for Sky-maps (2023)</h3>
-                    <strong>Bachelor’s Thesis</strong> — Università degli Studi di Trieste<br>
-                    <em>Supervisor: <a href="https://arts.units.it/cris/rp/rp76079">Elena Orlando (INAF)</a>.</em>
+            <div class="project">
+                <div class="project-content">
+                    <img src="images/skymap_correlation.png" alt="Sky-map Correlation" class="project-image">
+                    <div class="project-text">
+                        <h3>Bachelor's Internship — Astrophysical Data Analysis for Sky-maps (2023)</h3>
+                        <p>
+                            <strong>INAF</strong> — Università degli Studi di Trieste<br>
+                            <em>Supervisor: <a href="https://arts.units.it/cris/rp/rp76079">Elena Orlando (INAF)</a>.</em>
+                        </p>
                     <!-- ==== Summarized Abstract ==== -->
                     <h4 style="margin:1rem 0 .5rem;color:var(--accent);">The Project</h4>
                     <p>
@@ -672,9 +703,11 @@
                         The problem was open-ended, and I had to come up with my own solution, which was
                         to make a library for calculating the local correlation efficiently.<br>
                     </p>
+                    </div>
                 </div>
             </div>
-        </div>
+        </section>
+        <hr>
 
 
         <!-- Projects -->
@@ -791,9 +824,9 @@
                         <h3>Mini-Hold'Em (Coursework Project, 2025)</h3>
                         <p>
                             In
-                            <a href="https://github.com/Omega97/MiniPoker2">
-                            , I understood and implemented <b>Counterfactual Regret Minimization (CFR)</b>
-							to create a strong MiniPoker bot, despite hidden information playing a significant factor.
+                            <a href="https://github.com/Omega97/MiniPoker2">this project</a>,
+                            I understood and implemented <b>Counterfactual Regret Minimization (CFR)</b>
+                            to create a strong MiniPoker bot, despite hidden information playing a significant factor.
                         </p>
                     </div>
                 </div>

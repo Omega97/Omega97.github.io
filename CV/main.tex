@@ -8,6 +8,9 @@
 % Change the page layout if you need to
 \geometry{left=1.25cm,right=1.25cm,top=1.25cm,bottom=1.25cm,columnsep=1.25cm}
 
+% Images are located in the images/ folder at the project root
+\graphicspath{{../images/}{images/}}
+
 % The paracol package lets you typeset columns of text in parallel
 \usepackage{paracol}
 
@@ -84,7 +87,7 @@
 \personalinfo{%
   % Not all of these are required!
   \email{omar.cusma.fait@gmail.com}
-  \phone{+39 334 1819464}
+  \phone{+39 393 180 8618}
   %\mailaddress{Åddrésş, Street, 00000 Cóuntry}
   \location{Friuli Venezia Giulia, ITALY}
   \homepage{https://omega97.github.io/}
@@ -162,85 +165,6 @@ I possess a strong background in \textbf{mathematics} and \textbf{physics}, whic
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\cvsection{Projects}
-
-% Astrophysics Internship
-\cvevent{Astrophysics Internship}{}{2023}{INAF} % 2023
-\begin{itemize}
-\item In a Study of the local correlation between two HEALPix images, I faced an open-ended problem for which I had to come up with my own solution to the problem.
-\end{itemize}
-
-\divider
-
-% Semantic Retrieval System with LLMs
-\cvevent{Semantic Retrieval System with LLMs}{}{}{} % {2024}{UniTS}
-\begin{itemize}
-\item I created a system that can search through a folder of documents to find the most relevant one, highlight the most relevant text in the document, or group the files in folders based on meaning. 
-\end{itemize}
-
-\divider
-
-% Royal Game of Ur Self-Reinforcement Learning AI
-\cvevent{Royal Game of Ur Self-Reinforcement Learning AI}{}{}{} %{2024}{UniTS}  
-\begin{itemize}
-\item I applied my knowledge in Reinforcement Learning by creating a bot that learns to play well at the game through self-play only.
-\end{itemize}
-
-\divider
-
-% Wikipedia Recommendation System
-\cvevent{Wikipedia Recommendation System}{}{}{} %{2024}{UniTS}
-\begin{itemize}
-%\items todo better
-\item With my team, we created an online platform that recommends Wikipedia pages based on your preferences. I later improved the system by leveraging a lightweight sentence embedding model.
-\end{itemize}
-
-\divider
-
-% Quantum Ground State Simulation
-\cvevent{Quantum Ground State Simulation}{}{}{} %{2022}{UniTS} 
-\begin{itemize}
-\item I applied my knowledge in physics to write a program to find the ground state of a quantum system of interacting particles.
-%\item Given the potential, the program will find the system's ground state using the variational method. 
-%\item The program distinguishes between bosons and fermions and can also handle potentials with a singularity at the origin.
-\end{itemize}
-
-\divider
-
-% Peak Detection
-\cvevent{Peak Detection in Noisy Signal}{}{}{} % {2023}{}
-\begin{itemize}
-\item I helped a friend in automating the detection and localization of peaks in noisy spectroscopic data.
-\end{itemize}
-
-\divider
-
-% Telegram Bot
-\cvevent{Telegram Bot}{}{}{} % 2024
-\begin{itemize}
-\item I created a general-purpose bot that manages and interacts with Telegram users in real time.
-\end{itemize}
-
-
-%\divider
-
-% Wave simulation
-%\cvevent{Wave simulation}{UniTS}{}{} % 2022
-%\begin{itemize}
-%\item The library implements a simple simulation of a 2D wave using the Runge-Kutta method that can be exported to a GIF.
-%\item The library allows to specify the boundary conditions, initial conditions, and obstacles. 
-%\end{itemize}
-%\divider
-
-% Google Hash 2019
-%\cvevent{Google Hash 2019}{}{}{} % 2019
-%\begin{itemize}
-%\item I had the opportunity to show my programming and teamwork skills in an intense competition
-%\end{itemize}
-%\divider
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 \cvsection{Interests}
 
 \cvtag{Python} 
@@ -248,21 +172,43 @@ I possess a strong background in \textbf{mathematics} and \textbf{physics}, whic
 \cvtag{Physics} 
 \cvtag{Science}\\
 \cvtag{Simulations} 
-\cvtag{Reinfocement Learning} 
+\cvtag{Reinforcement Learning} 
 \cvtag{AI} \\
 \cvtag{Machine Learning} 
 \cvtag{Big Data}
 \cvtag{Deep Learning} 
- 
+
+\medskip
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\cvsection{Referees}
+
+\setlist[description]{nosep}
+
+% \cvref{name}{email}{mailing address}
+\cvref{Dr.\ Elena Orlando}{INAF}{orland.ele@gmail.com}
+
+\divider
+
+\cvref{Marco Zennaro}{Internship supervisor}{Available upon request}
+
+\divider
+
+\cvref{Alessio Ansuini}{Thesis supervisor}{Available upon request}
+
+\divider
+
+\cvref{Peter \v{C}ernic}{Principal, ISIS Gregor\v{c}i\v{c} -- Gorizia}{Available upon request}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \switchcolumn
 
 \cvsection{Digital Skills}
 
-\cvskill{Python}{4.5}
-\divider
-
+\cvtag{Python}
+\cvtag{Programming}
+\cvtag{Agentic AI}\\
 \cvtag{Pandas}
 \cvtag{NumPy}
 \cvtag{MatPlotLib}
@@ -299,11 +245,12 @@ Learning: \cvtag{Japanese}
 
 \cvsection{Education}
 
-\cvevent{Currently pursuing: Master's Degree\ in Data Science and Artificial Intelligence}{Università degli Studi di Trieste}{}{}
+\cvevent{Master's Degree in Data Science and Artificial Intelligence}{Università degli Studi di Trieste -- DSAI}{}{}
+Thesis title: Unsupervised State Bucketing for Mixture of Experts in Resource-Constrained Chess Engines
 
 \divider
 \cvevent{Bachelor's Degree\ in Physics}{Università degli Studi di Trieste}{}{}
-Thesis title: A Comparative Analysis of Neural Network Methonds for Source Detection
+Thesis title: A Comparative Analysis of Neural Network Methods for Source Detection
 
 \divider
 \cvevent{High School Diploma\ Applied Sciences}{Istituto di Istruzione Superiore Gabriele D'Annunzio}{}{}
@@ -316,20 +263,119 @@ Thesis title: A Comparative Analysis of Neural Network Methonds for Source Detec
 
 % \divider
 
+\end{paracol}
+
+\newpage
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\cvsection{Referees}
+\cvsection{Projects}
 
-% \cvref{name}{email}{mailing address}
-\cvref{Dr.\ Elena Orlando}{INAF}{orland.ele@gmail.com}
+% Astrophysics Internship
+\cvevent{Astrophysics Internship}{}{2023}{INAF}
+\begin{itemize}
+\item In a Study of the local correlation between two HEALPix images, I faced an open-ended problem for which I had to come up with my own solution to the problem.
+\end{itemize}
 
 \divider
 
-\cvref{Peter \v{C}ernic}{Principal, ISIS Gregor\v{c}i\v{c} -- Gorizia}{Available upon request}
+% AI internship
+\cvevent{AI internship}{}{2026}{ICTP}
+\begin{itemize}
+\item I developed a data-driven Mixture-of-Experts architecture to optimize resource-constrained NNUE chess engines through gradient-informed sample clustering and a lightweight inference dispatcher.
+\end{itemize}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\divider
 
-\end{paracol}
+% Semantic Retrieval System with LLMs
+\cvevent{Semantic Retrieval System with LLMs}{}{}{}
+\begin{itemize}
+\item A system that can search through a folder of documents to find the most relevant one, highlight the most relevant text in the document, or group the files in folders based on meaning.
+\end{itemize}
+
+\divider
+
+% Royal Game of Ur Self-Reinforcement Learning AI
+\cvevent{Royal Game of Ur Self-Reinforcement Learning AI}{}{}{}
+\begin{itemize}
+\item I applied my knowledge in Reinforcement Learning by creating a bot that learns to play well at the game through self-play only.
+\end{itemize}
+
+\divider
+
+% Wikipedia Recommendation System
+\cvevent{Wikipedia Recommendation System}{}{}{}
+\begin{itemize}
+\item With my team, we created an online platform that recommends Wikipedia pages based on your preferences. I later improved the system by leveraging a lightweight sentence embedding model.
+\end{itemize}
+
+\divider
+
+% Quantum Ground State Simulation
+\cvevent{Quantum Ground State Simulation}{}{}{}
+\begin{itemize}
+\item I applied my knowledge in physics to write a program to find the ground state of a quantum system of interacting particles.
+\end{itemize}
+
+\divider
+
+% Peak Detection
+\cvevent{Peak Detection in Noisy Signal}{}{}{}
+\begin{itemize}
+\item I helped a friend in automating the detection and localization of peaks in noisy spectroscopic data on a user-friendly interface.
+\end{itemize}
+
+\divider
+
+% tisext
+\cvevent{tisext -- Intelligent Time Series Extension}{}{}{}
+\begin{itemize}
+\item A Python library that \textbf{extends periodic time series} by learning underlying patterns, even in noisy or interrupted signals. I tested it on a real-world dataset to \textbf{forecast product demand}.
+\end{itemize}
+
+\divider
+
+% Telegram Bot
+\cvevent{Telegram Bot}{}{}{}
+\begin{itemize}
+\item I created a general-purpose bot that manages and interacts with Telegram users in real time.
+\end{itemize}
+
+\divider
+
+% Mini-Hold'Em
+\cvevent{Mini-Hold'Em}{}{}{}
+\begin{itemize}
+\item I understood and implemented \textbf{Counterfactual Regret Minimization (CFR)} to create a strong MiniPoker bot, despite hidden information playing a significant factor.
+\end{itemize}
+
+\divider
+
+% Mancala
+\cvevent{Mancala Self-Reinforcement Learning AI}{}{}{}
+\begin{itemize}
+\item A self-reinforcement learning AI for the game of Mancala. The agent uses 2-ply exhaustive search and a \textbf{neural network-based value function} to choose the best move. The value function leverages self-play, and is trained from scratch.
+\end{itemize}
+
+\vfill
+\hfill\includegraphics[width=2cm]{Omar_page_QR_code}
+
+
+%\divider
+
+% Wave simulation
+%\cvevent{Wave simulation}{UniTS}{}{} % 2022
+%\begin{itemize}
+%\item The library implements a simple simulation of a 2D wave using the Runge-Kutta method that can be exported to a GIF.
+%\item The library allows to specify the boundary conditions, initial conditions, and obstacles. 
+%\end{itemize}
+%\divider
+
+% Google Hash 2019
+%\cvevent{Google Hash 2019}{}{}{} % 2019
+%\begin{itemize}
+%\item I had the opportunity to show my programming and teamwork skills in an intense competition
+%\end{itemize}
+%\divider
 
 \end{document}

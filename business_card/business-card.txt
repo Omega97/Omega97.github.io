@@ -1,0 +1,22 @@
+A well-made business card balances tactile quality with effortless readability. It instantly communicates who you are and how to reach you without visual clutter.
+
+---
+
+## Key Attributes of Great Design
+
+* **Generous Negative Space:** Information is grouped cleanly so the card feels light rather than crammed. Essential details (Name, Title, Email, Phone, Website, and optional QR code) take priority over secondary information.
+* **Clear Visual Hierarchy:** The eye naturally flows from the boldest element (typically the logo or name) down to the secondary contact details in a smaller, highly readable font size (at least 8pt).
+* **Double-Sided Purpose:** The front acts as a brand marquee (showing just the logo and tagline or brand motif), while the back handles functional contact details.
+* **Heavyweight Stock:** A sturdy cardstock (typically 14pt/350gsm to 16pt/400gsm or thicker) prevents flimsy bending and feels substantial in hand.
+* **Restrained Palette & Typography:** Stick to 1–2 legible font families and a cohesive brand color scheme to keep the layout polished.
+
+---
+
+## Standard Specifications
+
+| Property | Standard Benchmark |
+| --- | --- |
+| **Dimensions** | 3.5" × 2.0" (US) or 85 mm × 55 mm (EU/UK) |
+| **Safe Zone Margin** | 3 mm / 0.125" inward from the cut edge to avoid trimmed text |
+| **Paper Weight** | 350 gsm (14 pt) to 450 gsm (18 pt) |
+| **Finish Options** | Soft-touch matte, subtle spot UV on the logo, or foil stamping |
